@@ -2375,6 +2375,9 @@ function openRecruitment(file){
 $('saveSystemBack').onclick=()=>{closeSaveSystem();if(!$('menu').classList.contains('hidden'))showMenuPage('main')};
 initializeSaveSystem();
 drawNights();showMenuPage('main');render();
+
+// Update 78: expose the actual night starter to the Firebase module.
+window.fnaaStartOnlineNight = function(){ night=1; customMode=false; secretMode=false; reset(); };
 </script>
 <style>
 #online75Panel{position:fixed;inset:0;z-index:99999;background:#070b14f7;color:#edf5ff;overflow-y:auto;padding:20px 14px 70px;font:15px system-ui,sans-serif;text-align:center}
@@ -2459,7 +2462,7 @@ function launchSharedNight(code,launchId){
  panel.hidden=true;
  try{
   // Launches the existing local game on both phones; not yet shared gameplay state.
-  if(typeof window.reset==='function'){window.reset()}
+  if(typeof window.fnaaStartOnlineNight==='function'){window.fnaaStartOnlineNight()}
   else{msg('Could not open the night automatically.');panel.hidden=false;return}
  }catch(e){panel.hidden=false;msg('Game launch failed: '+e.message)}
 }
