@@ -2416,7 +2416,9 @@ async function connect(){if(connecting)return;connecting=true;try{const app=init
 function home(){if(!profile){view('<div class="on75card"><h3>CHOOSE YOUR FOREVER NAME</h3><p>Your username cannot be changed after confirming. Use a nickname, not your real name or private information.</p><input id="on75name" maxlength="20" placeholder="Your username" autocomplete="off"><br><button id="on75save">LOCK IN USERNAME</button><p class="on75muted">3–20 characters. No control characters or abusive names.</p></div>');$75('on75save').onclick=saveName;return}
 view('<div class="on75card"><h3>WELCOME, '+escapeHTML(profile.name)+'</h3><p class="on75muted">Permanent player profile</p><button id="on75create">CREATE PRIVATE ROOM</button><br><button id="on76board">🏆 GLOBAL LEADERBOARD</button><p>OR</p><input id="on75joincode" placeholder="6-digit room code" inputmode="numeric" maxlength="6"><br><button id="on75join">JOIN ROOM</button></div><p class="on75muted">Host can launch both players into a night. Shared survival mechanics are still in development.</p>');$75('on75create').onclick=createRoom;$75('on76board').onclick=showLeaderboard;$75('on75join').onclick=()=>joinRoom($75('on75joincode').value.trim())}
 async function saveName(){const name=$75('on75name').value.trim();if(name.length<3||name.length>20||/[\u0000-\u001f\u007f<>]/.test(name)){msg('Choose a name with 3–20 characters, without angle brackets or control characters.');return}if(!confirm('Lock in "'+name+'" forever? You cannot rename this account.'))return;try{const p=ref(db,'profiles/'+uid);const result=await runTransaction(p,old=>old===null?{name,createdAt:Date.now()}:undefined,{applyLocally:false});if(!result.committed){msg('This account already has a permanent name.');const snap=await get(p);profile=snap.val()}else profile=result.snapshot.val();home()}catch(e){msg('Could not save name: '+e.message)}}
-function leaveListener(){if(unsub){unsub();unsub=null}room=null}
+let roomStartPoll=null;
+function stopRoomStartPoll(){if(roomStartPoll!==null){clearInterval(roomStartPoll);roomStartPoll=null}}
+function leaveListener(){stopRoomStartPoll();if(unsub){unsub();unsub=null}room=null}
 async function createRoom(){if(!uid||!profile)return;msg('Creating room…');for(let i=0;i<5;i++){const code=String(Math.floor(100000+Math.random()*900000));try{const r=ref(db,'rooms/'+code);const result=await runTransaction(r,old=>old===null?{host:uid,createdAt:Date.now(),players:{[uid]:{name:profile.name}}}:undefined,{applyLocally:false});if(result.committed){watchRoom(code);return}}catch(e){msg('Room creation failed: '+e.message);return}}msg('Could not find a free room code. Try again.')}
 async function joinRoom(code){if(!/^\d{6}$/.test(code)){msg('Enter a six-digit code.');return}msg('Joining room…');try{const snap=await get(ref(db,'rooms/'+code));if(!snap.exists()){msg('Room not found.');return}const players=snap.val().players||{};if(!players[uid]&&Object.keys(players).length>=2){msg('Room is full.');return}await set(ref(db,'rooms/'+code+'/players/'+uid),{name:profile.name});watchRoom(code)}catch(e){msg('Could not join: '+e.message)}}
 const boardCategories=[
@@ -2453,6 +2455,7 @@ async function startRoom(code){
 function launchSharedNight(code,launchId){
  if(lastLaunch===code+':'+launchId)return;
  lastLaunch=code+':'+launchId;
+ stopRoomStartPoll();
  panel.hidden=true;
  try{
   // Launches the existing local game on both phones; not yet shared gameplay state.
@@ -2460,7 +2463,15 @@ function launchSharedNight(code,launchId){
   else{msg('Could not open the night automatically.');panel.hidden=false;return}
  }catch(e){panel.hidden=false;msg('Game launch failed: '+e.message)}
 }
-function watchRoom(code){leaveListener();room=code;const myRoom=ref(db,'rooms/'+code);unsub=onValue(myRoom,snap=>{if(room!==code)return;if(!snap.exists()){leaveListener();home();msg('Room closed.');return}const v=snap.val(),players=Object.entries(v.players||{});view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><p>Share this code with a friend.</p><h3>PLAYERS ('+players.length+'/2)</h3>'+players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(id===v.host?' 👑 HOST':'')+'</p>').join('')+'<p class="on75muted">'+(v.status==='started'?'Game started!':players.length===2?'Both players connected! Host can start.':'Waiting for another player…')+'</p>'+(v.host===uid&&v.status!=='started'?'<button id="on76start" '+(players.length!==2?'disabled':'')+'>▶ START GAME</button>':'')+'<button id="on75leave">LEAVE ROOM</button></div>');if($75('on76start'))$75('on76start').onclick=()=>startRoom(code);if(v.status==='started'&&v.launchId)launchSharedNight(code,v.launchId);$75('on75leave').onclick=leaveRoom},e=>msg('Lobby read error: '+e.message));}
+function watchRoom(code){leaveListener();room=code;const myRoom=ref(db,'rooms/'+code);
+ // Backup for mobile browsers that suspend or miss live Firebase events.
+ roomStartPoll=setInterval(async()=>{
+  if(room!==code||!db)return;
+  try{const snap=await get(myRoom);if(room!==code||!snap.exists())return;
+   const v=snap.val();if(v.status==='started'&&v.launchId)launchSharedNight(code,v.launchId);
+  }catch(e){console.warn('Lobby start check:',e.message)}
+ },1500);
+ unsub=onValue(myRoom,snap=>{if(room!==code)return;if(!snap.exists()){leaveListener();home();msg('Room closed.');return}const v=snap.val(),players=Object.entries(v.players||{});view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><p>Share this code with a friend.</p><h3>PLAYERS ('+players.length+'/2)</h3>'+players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(id===v.host?' 👑 HOST':'')+'</p>').join('')+'<p class="on75muted">'+(v.status==='started'?'Game started!':players.length===2?'Both players connected! Host can start.':'Waiting for another player…')+'</p>'+(v.host===uid&&v.status!=='started'?'<button id="on76start" '+(players.length!==2?'disabled':'')+'>▶ START GAME</button>':'')+'<button id="on75leave">LEAVE ROOM</button></div>');if($75('on76start'))$75('on76start').onclick=()=>startRoom(code);if(v.status==='started'&&v.launchId)launchSharedNight(code,v.launchId);$75('on75leave').onclick=leaveRoom},e=>msg('Lobby read error: '+e.message));}
 async function leaveRoom(){const code=room;leaveListener();if(code)try{await set(ref(db,'rooms/'+code+'/players/'+uid),null)}catch(e){}home()}
 </script>
 </body></html>
