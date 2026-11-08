@@ -2376,6 +2376,22 @@ $('saveSystemBack').onclick=()=>{closeSaveSystem();if(!$('menu').classList.conta
 initializeSaveSystem();
 drawNights();showMenuPage('main');render();
 
+// Update 81: multiplayer shared physical controls; cameras stay local to each phone.
+window.fnaaSharedControls = () => ({left:!!left,right:!!right,ventLeft:!!joelSealed[0],ventRight:!!joelSealed[1]});
+window.fnaaApplySharedControls = function(v){
+ if(!running||!v)return;
+ if(typeof v.left==='boolean')left=v.left;
+ if(typeof v.right==='boolean')right=v.right;
+ if(typeof v.ventLeft==='boolean')joelSealed[0]=v.ventLeft;
+ if(typeof v.ventRight==='boolean')joelSealed[1]=v.ventRight;
+ render();renderJoel();
+};
+// Broadcast only door and vent button presses, never camera toggles.
+document.addEventListener('click',function(e){
+ const button=e.target.closest('button');
+ if(button&&['leftbtn','rightbtn','joelLeftButton','joelRightButton'].includes(button.id))
+  setTimeout(()=>window.dispatchEvent(new Event('fnaa-shared-controls-changed')),0);
+},true);
 // Update 78: expose the actual night starter to the Firebase module.
 window.fnaaStartOnlineNight = function(){ night=1; customMode=false; secretMode=false; reset(); };
 </script>
@@ -2394,6 +2410,26 @@ import {getDatabase,ref,get,set,update,onValue,runTransaction,onDisconnect} from
 const cfg={apiKey:'AIzaSyDs8QOZfbKUxCoTbvdOtz-7wGLzdcyrWjk',authDomain:'five-nights-at-angels.firebaseapp.com',databaseURL:'https://five-nights-at-angels-default-rtdb.firebaseio.com',projectId:'five-nights-at-angels',storageBucket:'five-nights-at-angels.firebasestorage.app',messagingSenderId:'142197675970',appId:'1:142197675970:web:3a2dcbfb371fc9e770285b',measurementId:'G-CFSFC3MFJE'};
 const $75=id=>document.getElementById(id),panel=$75('online75Panel'),content=$75('on75content'),status=$75('on75status');
 let auth,db,uid=null,profile=null,room=null,unsub=null,connecting=false,lastLaunch=null;
+let countTimer=null, sharedControlsUnsub=null, sharedControlsRoom=null, lastControlsJSON='';
+function stopCount(){if(countTimer!==null){clearInterval(countTimer);countTimer=null}}
+function stopShared(){if(sharedControlsUnsub){sharedControlsUnsub();sharedControlsUnsub=null}sharedControlsRoom=null;lastControlsJSON=''}
+window.addEventListener('fnaa-shared-controls-changed',async()=>{
+ if(!room||!db||!uid||!lastLaunch||sharedControlsRoom!==room||!window.fnaaSharedControls)return;
+ const state=window.fnaaSharedControls();
+ try{await update(ref(db,'rooms/'+room+'/controls'),state)}catch(e){console.warn('Shared controls write:',e.message)}
+});
+function beginSharedControls(code){
+ if(sharedControlsRoom===code)return;
+ stopShared();sharedControlsRoom=code;
+ sharedControlsUnsub=onValue(ref(db,'rooms/'+code+'/controls'),snap=>{
+  if(sharedControlsRoom!==code||!snap.exists())return;
+  const state=snap.val(),serialized=JSON.stringify(state);
+  if(serialized===lastControlsJSON)return;
+  lastControlsJSON=serialized;
+  if(typeof window.fnaaApplySharedControls==='function')window.fnaaApplySharedControls(state);
+ });
+}
+
 function msg(t){status.textContent=t||''}
 window.addEventListener('fnaa-night-won',async event=>{
  if(!db||!uid||!profile)return;
@@ -2413,7 +2449,7 @@ function view(html,title='ONLINE MULTIPLAYER'){content.innerHTML=html;$75('on75t
 function open(){panel.hidden=false; if(!uid){view('<p>Connecting to Firebase…</p>');connect()}else home()}
 function close(){panel.hidden=true}
 $75('online75Open').addEventListener('click',open);$75('on76LeaderboardMenu').addEventListener('click',()=>{panel.hidden=false;if(!uid){view('<p>Connecting to Firebase…</p>','LEADERBOARDS');connect().then(()=>showLeaderboard()).catch(()=>{});}else showLeaderboard()});
-$75('updates75Open').addEventListener('click',()=>{panel.hidden=false;view('<div class="on75card"><h3>UPDATE 79 — START + LEADERBOARD</h3><p>✓ Firebase anonymous player IDs</p><p>✓ One-time permanent usernames</p><p>✓ Create or join private two-player lobbies</p><p>✓ Live lobby player list</p><p>✓ Host Start Game button</p><p>✓ Shared lobby launch signal</p><p>✓ Leaderboard preview</p><p class="on75muted">The two phones launch their own night when the host starts. Gameplay actions are not yet synchronized. Leaderboard publishing requires updated Firebase rules.</p></div>','UPDATE LOG')});
+$75('updates75Open').addEventListener('click',()=>{panel.hidden=false;view('<div class="on75card"><h3>UPDATE 81 — READY-UP CO-OP</h3><p>✓ Firebase anonymous player IDs</p><p>✓ One-time permanent usernames</p><p>✓ Create or join private two-player lobbies</p><p>✓ Live lobby player list</p><p>✓ Host Start Game button</p><p>✓ Shared lobby launch signal</p><p>✓ Leaderboard preview</p><p class="on75muted">The two phones launch their own night when the host starts. Gameplay actions are not yet synchronized. Leaderboard publishing requires updated Firebase rules.</p></div>','UPDATE LOG')});
 $75('on75close').addEventListener('click',close);
 async function connect(){if(connecting)return;connecting=true;try{const app=initializeApp(cfg);auth=getAuth(app);db=getDatabase(app);await signInAnonymously(auth);uid=auth.currentUser?.uid;if(!uid)throw Error('Could not sign in');const snap=await get(ref(db,'profiles/'+uid));profile=snap.exists()?snap.val():null;home()}catch(e){view('<p>Connection failed. Check internet and Firebase configuration.</p><button id="on75retry">RETRY</button>');$75('on75retry').onclick=()=>{connecting=false;connect()};msg(e.message)}finally{connecting=false}}
 function home(){if(!profile){view('<div class="on75card"><h3>CHOOSE YOUR FOREVER NAME</h3><p>Your username cannot be changed after confirming. Use a nickname, not your real name or private information.</p><input id="on75name" maxlength="20" placeholder="Your username" autocomplete="off"><br><button id="on75save">LOCK IN USERNAME</button><p class="on75muted">3–20 characters. No control characters or abusive names.</p></div>');$75('on75save').onclick=saveName;return}
@@ -2421,9 +2457,9 @@ view('<div class="on75card"><h3>WELCOME, '+escapeHTML(profile.name)+'</h3><p cla
 async function saveName(){const name=$75('on75name').value.trim();if(name.length<3||name.length>20||/[\u0000-\u001f\u007f<>]/.test(name)){msg('Choose a name with 3–20 characters, without angle brackets or control characters.');return}if(!confirm('Lock in "'+name+'" forever? You cannot rename this account.'))return;try{const p=ref(db,'profiles/'+uid);const result=await runTransaction(p,old=>old===null?{name,createdAt:Date.now()}:undefined,{applyLocally:false});if(!result.committed){msg('This account already has a permanent name.');const snap=await get(p);profile=snap.val()}else profile=result.snapshot.val();home()}catch(e){msg('Could not save name: '+e.message)}}
 let roomStartPoll=null;
 function stopRoomStartPoll(){if(roomStartPoll!==null){clearInterval(roomStartPoll);roomStartPoll=null}}
-function leaveListener(){stopRoomStartPoll();if(unsub){unsub();unsub=null}room=null}
+function leaveListener(){stopCount();stopShared();stopRoomStartPoll();if(unsub){unsub();unsub=null}room=null}
 async function createRoom(){if(!uid||!profile)return;msg('Creating room…');for(let i=0;i<5;i++){const code=String(Math.floor(100000+Math.random()*900000));try{const r=ref(db,'rooms/'+code);const result=await runTransaction(r,old=>old===null?{host:uid,createdAt:Date.now(),players:{[uid]:{name:profile.name}}}:undefined,{applyLocally:false});if(result.committed){watchRoom(code);return}}catch(e){msg('Room creation failed: '+e.message);return}}msg('Could not find a free room code. Try again.')}
-async function joinRoom(code){if(!/^\d{6}$/.test(code)){msg('Enter a six-digit code.');return}msg('Joining room…');try{const snap=await get(ref(db,'rooms/'+code));if(!snap.exists()){msg('Room not found.');return}const players=snap.val().players||{};if(!players[uid]&&Object.keys(players).length>=2){msg('Room is full.');return}await set(ref(db,'rooms/'+code+'/players/'+uid),{name:profile.name});watchRoom(code)}catch(e){msg('Could not join: '+e.message)}}
+async function joinRoom(code){if(!/^\d{6}$/.test(code)){msg('Enter a six-digit code.');return}msg('Joining room…');try{const snap=await get(ref(db,'rooms/'+code));if(!snap.exists()){msg('Room not found.');return}const players=snap.val().players||{};if(snap.val().countdownAt||snap.val().status==='started'){msg('Game already starting.');return}if(!players[uid]&&Object.keys(players).length>=2){msg('Room is full.');return}await set(ref(db,'rooms/'+code+'/players/'+uid),{name:profile.name});watchRoom(code)}catch(e){msg('Could not join: '+e.message)}}
 const boardCategories=[
  ['endlessBest','♾️ ENDLESS HIGH SCORES','shifts'],
  ['taskFrenzyCompletions','📋 TASK FRENZY','completions'],
@@ -2448,26 +2484,51 @@ async function showLeaderboard(category=activeBoardCategory){
   target.innerHTML=entries.length?entries.map((e,i)=>'<div style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #45515d;padding:9px 3px;text-align:left"><span>'+(i+1)+'. '+escapeHTML(e.name)+'</span><strong>'+e.score.toLocaleString()+' '+cat[2]+'</strong></div>').join(''):'No verified scores submitted for this category yet.';
  }catch(e){const target=$75('on76scores');if(target)target.textContent='Rankings unavailable until Firebase leaderboard rules allow reading. '+e.message}
 }
-async function startRoom(code){
- const button=$75('on76start');if(button)button.disabled=true;
+async function toggleReady(code,ready){
+ if(!db||room!==code)return;
  try{
-  const r=ref(db,'rooms/'+code),snap=await get(r),v=snap.val();
-  if(!v||v.host!==uid||Object.keys(v.players||{}).length!==2){msg('Both players must be in the room.');return}
-  // Write the child paths permitted by Firebase rules; publish status LAST.
-  // This avoids object equality checks on the entire players map.
-  await set(ref(db,'rooms/'+code+'/night'),1);
-  await set(ref(db,'rooms/'+code+'/launchId'),Date.now());
-  await set(ref(db,'rooms/'+code+'/status'),'started');
-  const confirmed=await get(r);
-  if(!confirmed.exists()||confirmed.val().status!=='started')throw new Error('Firebase did not confirm the start.');
-  launchSharedNight(code,confirmed.val().launchId);
- }catch(e){msg('START GAME FAILED: '+e.message);console.error('Firebase start failed',e)}
- finally{if(button&&button.isConnected)button.disabled=false}
+  await set(ref(db,'rooms/'+code+'/ready/'+uid),!!ready);
+  msg(ready?'You are READY! Waiting for your friend…':'You are not ready.');
+ }catch(e){msg('READY FAILED: '+e.message)}
+}
+async function startCountdownIfReady(code,v){
+ if(!v||v.host!==uid||v.status==='started'||v.countdownAt)return;
+ const ids=Object.keys(v.players||{});
+ if(ids.length!==2||!ids.every(id=>v.ready&&v.ready[id]===true))return;
+ try{
+  const at=Date.now()+5000;
+  const result=await runTransaction(ref(db,'rooms/'+code+'/countdownAt'),old=>old===null?at:undefined,{applyLocally:false});
+  if(!result.committed)return;
+ }catch(e){msg('COUNTDOWN FAILED: '+e.message)}
+}
+function observeCountdown(code,v){
+ if(room!==code)return;
+ if(v.status==='started'&&v.launchId){launchSharedNight(code,v.launchId);return}
+ if(!v.countdownAt){stopCount();return}
+ if(countTimer!==null)return;
+ const tick=async()=>{
+  if(room!==code){stopCount();return}
+  const seconds=Math.max(0,Math.ceil((v.countdownAt-Date.now())/1000));
+  const display=$75('on81countdown');if(display)display.textContent=seconds>0?'NIGHT STARTS IN '+seconds+'…':'STARTING NIGHT…';
+  if(seconds>0)return;
+  stopCount();
+  if(v.host===uid){
+   try{
+    // Publish STARTED only after the 5-second countdown, then all players receive it.
+    await set(ref(db,'rooms/'+code+'/night'),1);
+    await set(ref(db,'rooms/'+code+'/launchId'),v.countdownAt);
+    await set(ref(db,'rooms/'+code+'/status'),'started');
+   }catch(e){msg('START FAILED: '+e.message)}
+  }
+  // Guests wait for confirmed status from Firebase, not an unverified local launch.
+ };
+ tick();countTimer=setInterval(tick,200);
 }
 function launchSharedNight(code,launchId){
  if(lastLaunch===code+':'+launchId)return;
  lastLaunch=code+':'+launchId;
  stopRoomStartPoll();
+ beginSharedControls(code);
  panel.hidden=true;
  try{
   // Launches the existing local game on both phones; not yet shared gameplay state.
@@ -2475,15 +2536,46 @@ function launchSharedNight(code,launchId){
   else{msg('Could not open the night automatically.');panel.hidden=false;return}
  }catch(e){panel.hidden=false;msg('Game launch failed: '+e.message)}
 }
+async function checkAndEnterNight(code){
+ if(room!==code||!db){msg('Join a room first.');return}
+ msg('Checking Firebase start signal…');
+ try{
+  const snap=await get(ref(db,'rooms/'+code));
+  if(!snap.exists()){msg('Room no longer exists.');return}
+  const v=snap.val();
+  if(v.status==='started'&&v.launchId){
+   launchSharedNight(code,v.launchId);
+  }else{
+   msg('Host has not published START GAME to Firebase yet. Ask host to press START GAME.');
+  }
+ }catch(e){msg('Could not check room: '+e.message)}
+}
 function watchRoom(code){leaveListener();room=code;const myRoom=ref(db,'rooms/'+code);
  // Backup for mobile browsers that suspend or miss live Firebase events.
  roomStartPoll=setInterval(async()=>{
   if(room!==code||!db)return;
   try{const snap=await get(myRoom);if(room!==code||!snap.exists())return;
-   const v=snap.val();if(v.status==='started'&&v.launchId&&v.host!==uid)launchSharedNight(code,v.launchId);
+   const v=snap.val();if(v.status==='started'&&v.launchId)launchSharedNight(code,v.launchId);else if(v.countdownAt)observeCountdown(code,v);
   }catch(e){console.warn('Lobby start check:',e.message)}
  },1500);
- unsub=onValue(myRoom,snap=>{if(room!==code)return;if(!snap.exists()){leaveListener();home();msg('Room closed.');return}const v=snap.val(),players=Object.entries(v.players||{});view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><p>Share this code with a friend.</p><h3>PLAYERS ('+players.length+'/2)</h3>'+players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(id===v.host?' 👑 HOST':'')+'</p>').join('')+'<p class="on75muted">'+(v.status==='started'?'Game started!':players.length===2?'Both players connected! Host can start.':'Waiting for another player…')+'</p>'+(v.host===uid&&v.status!=='started'?'<button id="on76start" '+(players.length!==2?'disabled':'')+'>▶ START GAME</button>':'')+'<button id="on75leave">LEAVE ROOM</button></div>');if($75('on76start'))$75('on76start').onclick=()=>startRoom(code);if(v.status==='started'&&v.launchId&&v.host!==uid)launchSharedNight(code,v.launchId);$75('on75leave').onclick=leaveRoom},e=>msg('Lobby read error: '+e.message));}
-async function leaveRoom(){const code=room;leaveListener();if(code)try{await set(ref(db,'rooms/'+code+'/players/'+uid),null)}catch(e){}home()}
+ unsub=onValue(myRoom,snap=>{
+  if(room!==code)return;
+  if(!snap.exists()){leaveListener();home();msg('Room closed.');return}
+  const v=snap.val(),players=Object.entries(v.players||{}),ready=v.ready||{};
+  const bothReady=players.length===2&&players.every(([id])=>ready[id]===true);
+  const hasCountdown=Number.isFinite(v.countdownAt);
+  view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><h3>PLAYERS ('+players.length+'/2)</h3>'+
+    players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(id===v.host?' 👑 HOST':'')+' — '+(ready[id]?'✅ READY':'⏳ NOT READY')+'</p>').join('')+
+    '<p class="on75muted">'+(hasCountdown?'Both ready!':bothReady?'Starting countdown…':'Both players must ready up.')+'</p>'+
+    (hasCountdown?'<h2 id="on81countdown">NIGHT STARTS IN 5…</h2>':'<button id="on81ready">'+(ready[uid]?'❌ UNREADY':'✅ READY UP')+'</button>')+
+    '<button id="on75leave">LEAVE ROOM</button></div>');
+  if($75('on81ready'))$75('on81ready').onclick=()=>toggleReady(code,!ready[uid]);
+  $75('on75leave').onclick=leaveRoom;
+  if(v.status==='started'&&v.launchId){launchSharedNight(code,v.launchId);return}
+  if(hasCountdown)observeCountdown(code,v);
+  else if(v.host===uid&&bothReady)startCountdownIfReady(code,v);
+ },e=>msg('Lobby read error: '+e.message));}
+
+async function leaveRoom(){const code=room;leaveListener();if(code)try{await set(ref(db,'rooms/'+code+'/ready/'+uid),null);await set(ref(db,'rooms/'+code+'/players/'+uid),null)}catch(e){}home()}
 </script>
 </body></html>
