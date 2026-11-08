@@ -2437,11 +2437,31 @@ window.fnaaStartOnlineNight = function(){ night=1; customMode=false; secretMode=
 <button id="on75close">← BACK TO GAME</button><h2 id="on75title">ONLINE MULTIPLAYER</h2>
 <div id="on75content"></div><p id="on75status" aria-live="polite"></p>
 </div></div>
+<style id="arrival83style">
+#arrival83{position:absolute;inset:0;z-index:9999;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;text-align:center;background:radial-gradient(ellipse at 50% 10%,#c58b1d 0%,#4c330b 33%,#090808 80%);color:#fff5bb;isolation:isolate;animation:arrival83fade .5s ease both}
+#arrival83 .arrival83rays{position:absolute;inset:-40%;z-index:-1;background:repeating-conic-gradient(from 0deg at 50% 0%,#ffe79a33 0deg 7deg,transparent 8deg 18deg);animation:arrival83spin 18s linear infinite}
+#arrival83 .arrival83stars{font-size:30px;letter-spacing:15px;color:#fff7ca;animation:arrival83pulse 1s ease-in-out infinite alternate}
+#arrival83 .arrival83name{font-weight:1000;font-size:clamp(24px,7vw,54px);line-height:1.15;text-shadow:0 0 18px #ffe88e,0 0 55px #ffc928;overflow-wrap:anywhere;max-width:95%;animation:arrival83descend 3s cubic-bezier(.18,.7,.2,1) both}
+#arrival83 .arrival83badge,.arrival83listbadge{color:#ffe27b;font-weight:900;text-shadow:0 0 12px #e5a300}
+#arrival83 .arrival83badge{font-size:clamp(16px,4vw,26px);animation:arrival83reveal 3.3s both}
+#arrival83 .arrival83sub{font-size:12px;letter-spacing:3px;animation:arrival83reveal 4s both}
+#arrival83 button{z-index:2;background:#271d0b;color:#ffefb7;border:1px solid #d3a839;border-radius:8px;padding:8px 12px}
+#arrival83 #arrival83skip{position:absolute;right:12px;bottom:12px;font-size:12px}
+#arrival83 #arrival83sound{margin-top:10px}
+@keyframes arrival83descend{from{transform:translateY(-95vh) scale(1.3);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes arrival83reveal{0%,65%{opacity:0;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}
+@keyframes arrival83pulse{to{opacity:.4;transform:scale(1.1)}}
+@keyframes arrival83spin{to{transform:rotate(360deg)}}
+@keyframes arrival83fade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#arrival83 *{animation:none!important}}
+</style>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {getAuth,signInAnonymously,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {getDatabase,ref,get,set,update,onValue,runTransaction,onDisconnect} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 const cfg={apiKey:'AIzaSyDs8QOZfbKUxCoTbvdOtz-7wGLzdcyrWjk',authDomain:'five-nights-at-angels.firebaseapp.com',databaseURL:'https://five-nights-at-angels-default-rtdb.firebaseio.com',projectId:'five-nights-at-angels',storageBucket:'five-nights-at-angels.firebasestorage.app',messagingSenderId:'142197675970',appId:'1:142197675970:web:3a2dcbfb371fc9e770285b',measurementId:'G-CFSFC3MFJE'};
+const DEVELOPER_UID='REPLACE_WITH_YOUR_FIREBASE_UID'; // Update 83: set once to the creator's anonymous Firebase UID.
+const isCreator=id=>DEVELOPER_UID!=='REPLACE_WITH_YOUR_FIREBASE_UID'&&id===DEVELOPER_UID;
 const $75=id=>document.getElementById(id),panel=$75('online75Panel'),content=$75('on75content'),status=$75('on75status');
 let auth,db,uid=null,profile=null,room=null,unsub=null,connecting=false,lastLaunch=null;
 let countTimer=null, sharedControlsUnsub=null, sharedControlsRoom=null, lastControlsJSON='';
@@ -2513,19 +2533,45 @@ window.addEventListener('fnaa-night-won',async event=>{
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function view(html,title='ONLINE MULTIPLAYER'){content.innerHTML=html;$75('on75title').textContent=title;msg('')}
 function open(){panel.hidden=false; if(!uid){view('<p>Connecting to Firebase…</p>');connect()}else home()}
-function close(){panel.hidden=true}
+function close(){endArrival83();panel.hidden=true}
 $75('online75Open').addEventListener('click',open);$75('on76LeaderboardMenu').addEventListener('click',()=>{panel.hidden=false;if(!uid){view('<p>Connecting to Firebase…</p>','LEADERBOARDS');connect().then(()=>showLeaderboard()).catch(()=>{});}else showLeaderboard()});
 $75('updates75Open').addEventListener('click',()=>{panel.hidden=false;view('<div class="on75card"><h3>UPDATE 81 — READY-UP CO-OP</h3><p>✓ Firebase anonymous player IDs</p><p>✓ One-time permanent usernames</p><p>✓ Create or join private two-player lobbies</p><p>✓ Live lobby player list</p><p>✓ Host Start Game button</p><p>✓ Shared lobby launch signal</p><p>✓ Leaderboard preview</p><p class="on75muted">The two phones launch their own night when the host starts. Gameplay actions are not yet synchronized. Leaderboard publishing requires updated Firebase rules.</p></div>','UPDATE LOG')});
 $75('on75close').addEventListener('click',close);
 async function connect(){if(connecting)return;connecting=true;try{const app=initializeApp(cfg);auth=getAuth(app);db=getDatabase(app);await signInAnonymously(auth);uid=auth.currentUser?.uid;if(!uid)throw Error('Could not sign in');const snap=await get(ref(db,'profiles/'+uid));profile=snap.exists()?snap.val():null;home()}catch(e){view('<p>Connection failed. Check internet and Firebase configuration.</p><button id="on75retry">RETRY</button>');$75('on75retry').onclick=()=>{connecting=false;connect()};msg(e.message)}finally{connecting=false}}
 function home(){if(!profile){view('<div class="on75card"><h3>CHOOSE YOUR FOREVER NAME</h3><p>Your username cannot be changed after confirming. Use a nickname, not your real name or private information.</p><input id="on75name" maxlength="20" placeholder="Your username" autocomplete="off"><br><button id="on75save">LOCK IN USERNAME</button><p class="on75muted">3–20 characters. No control characters or abusive names.</p></div>');$75('on75save').onclick=saveName;return}
-view('<div class="on75card"><h3>WELCOME, '+escapeHTML(profile.name)+'</h3><p class="on75muted">Permanent player profile</p><button id="on75create">CREATE PRIVATE ROOM</button><br><button id="on76board">🏆 GLOBAL LEADERBOARD</button><p>OR</p><input id="on75joincode" placeholder="6-digit room code" inputmode="numeric" maxlength="6"><br><button id="on75join">JOIN ROOM</button></div><p class="on75muted">Host can launch both players into a night. Shared survival mechanics are still in development.</p>');$75('on75create').onclick=createRoom;$75('on76board').onclick=showLeaderboard;$75('on75join').onclick=()=>joinRoom($75('on75joincode').value.trim())}
+view('<div class="on75card"><h3>WELCOME, '+escapeHTML(profile.name)+'</h3><p class="on75muted">Permanent player profile</p><button id="on75create">CREATE PRIVATE ROOM</button><br><button id="on83uid" type="button">SHOW MY ACCOUNT ID (PRIVATE)</button><p id="on83uidtext" hidden style="overflow-wrap:anywhere;user-select:text;font-size:12px"></p><br><button id="on76board">🏆 GLOBAL LEADERBOARD</button><p>OR</p><input id="on75joincode" placeholder="6-digit room code" inputmode="numeric" maxlength="6"><br><button id="on75join">JOIN ROOM</button></div><p class="on75muted">Host can launch both players into a night. Shared survival mechanics are still in development.</p>');if($75('on83uid'))$75('on83uid').onclick=()=>{const x=$75('on83uidtext');x.hidden=!x.hidden;x.textContent=uid||'Not signed in';};$75('on75create').onclick=createRoom;$75('on76board').onclick=showLeaderboard;$75('on75join').onclick=()=>joinRoom($75('on75joincode').value.trim())}
 async function saveName(){const name=$75('on75name').value.trim();if(name.length<3||name.length>20||/[\u0000-\u001f\u007f<>]/.test(name)){msg('Choose a name with 3–20 characters, without angle brackets or control characters.');return}if(!confirm('Lock in "'+name+'" forever? You cannot rename this account.'))return;try{const p=ref(db,'profiles/'+uid);const result=await runTransaction(p,old=>old===null?{name,createdAt:Date.now()}:undefined,{applyLocally:false});if(!result.committed){msg('This account already has a permanent name.');const snap=await get(p);profile=snap.val()}else profile=result.snapshot.val();home()}catch(e){msg('Could not save name: '+e.message)}}
+// Update 83 — a one-time heavenly lobby entrance per room and creator join.
+let arrivalSeen=new Set(), arrivalTimer=null, arrivalAudio=null;
+function endArrival83(){
+ if(arrivalTimer){clearTimeout(arrivalTimer);arrivalTimer=null}
+ document.getElementById('arrival83')?.remove();
+ if(arrivalAudio){arrivalAudio.pause();arrivalAudio=null}
+}
+function showArrival83(code,creator){
+ if(!panel.hidden && room===code && creator){
+  endArrival83();
+  const overlay=document.createElement('div');overlay.id='arrival83';overlay.setAttribute('role','status');
+  overlay.innerHTML='<div class="arrival83rays"></div><div class="arrival83stars">✦ ✧ ✦ ✧ ✦</div><div class="arrival83name">👑 '+escapeHTML(creator.name||'THE CREATOR')+' 👑</div><div class="arrival83badge">★ BEST DEVELOPER ★</div><div class="arrival83sub">THE CREATOR HAS ARRIVED</div><button id="arrival83sound" type="button" hidden>🔊 TAP TO HEAR THE HEAVENS</button><button id="arrival83skip" type="button">SKIP INTRO</button>';
+  panel.appendChild(overlay);
+  const audio=new Audio('./developer_entrance.mp3');audio.volume=.85;arrivalAudio=audio;
+  audio.play().catch(()=>{const btn=document.getElementById('arrival83sound');if(btn){btn.hidden=false;btn.onclick=()=>{audio.play().then(()=>btn.hidden=true).catch(()=>{});}}});
+  document.getElementById('arrival83skip').onclick=endArrival83;
+  arrivalTimer=setTimeout(endArrival83,7000);
+ }
+}
+function observeArrival83(code,players){
+ if(!isCreator(DEVELOPER_UID))return;
+ const creator=players[DEVELOPER_UID];if(!creator)return;
+ const marker=code+':'+String(creator.joinedAt||'initial');
+ if(arrivalSeen.has(marker))return;
+ arrivalSeen.add(marker);showArrival83(code,creator);
+}
 let roomStartPoll=null;
 function stopRoomStartPoll(){if(roomStartPoll!==null){clearInterval(roomStartPoll);roomStartPoll=null}}
-function leaveListener(){stop82();stopCount();stopShared();stopRoomStartPoll();if(unsub){unsub();unsub=null}room=null}
-async function createRoom(){if(!uid||!profile)return;msg('Creating room…');for(let i=0;i<5;i++){const code=String(Math.floor(100000+Math.random()*900000));try{const r=ref(db,'rooms/'+code);const result=await runTransaction(r,old=>old===null?{host:uid,createdAt:Date.now(),players:{[uid]:{name:profile.name}}}:undefined,{applyLocally:false});if(result.committed){watchRoom(code);return}}catch(e){msg('Room creation failed: '+e.message);return}}msg('Could not find a free room code. Try again.')}
-async function joinRoom(code){if(!/^\d{6}$/.test(code)){msg('Enter a six-digit code.');return}msg('Joining room…');try{const snap=await get(ref(db,'rooms/'+code));if(!snap.exists()){msg('Room not found.');return}const players=snap.val().players||{};if(snap.val().countdownAt||snap.val().status==='started'){msg('Game already starting.');return}if(!players[uid]&&Object.keys(players).length>=2){msg('Room is full.');return}await set(ref(db,'rooms/'+code+'/players/'+uid),{name:profile.name});watchRoom(code)}catch(e){msg('Could not join: '+e.message)}}
+function leaveListener(){endArrival83();arrivalSeen.clear();stop82();stopCount();stopShared();stopRoomStartPoll();if(unsub){unsub();unsub=null}room=null}
+async function createRoom(){if(!uid||!profile)return;msg('Creating room…');for(let i=0;i<5;i++){const code=String(Math.floor(100000+Math.random()*900000));try{const r=ref(db,'rooms/'+code);const result=await runTransaction(r,old=>old===null?{host:uid,createdAt:Date.now(),players:{[uid]:{name:profile.name,joinedAt:Date.now()}}}:undefined,{applyLocally:false});if(result.committed){watchRoom(code);return}}catch(e){msg('Room creation failed: '+e.message);return}}msg('Could not find a free room code. Try again.')}
+async function joinRoom(code){if(!/^\d{6}$/.test(code)){msg('Enter a six-digit code.');return}msg('Joining room…');try{const snap=await get(ref(db,'rooms/'+code));if(!snap.exists()){msg('Room not found.');return}const players=snap.val().players||{};if(snap.val().countdownAt||snap.val().status==='started'){msg('Game already starting.');return}if(!players[uid]&&Object.keys(players).length>=2){msg('Room is full.');return}await set(ref(db,'rooms/'+code+'/players/'+uid),{name:profile.name,joinedAt:Date.now()});watchRoom(code)}catch(e){msg('Could not join: '+e.message)}}
 const boardCategories=[
  ['endlessBest','♾️ ENDLESS HIGH SCORES','shifts'],
  ['taskFrenzyCompletions','📋 TASK FRENZY','completions'],
@@ -2629,10 +2675,11 @@ function watchRoom(code){leaveListener();room=code;const myRoom=ref(db,'rooms/'+
   if(room!==code)return;
   if(!snap.exists()){leaveListener();home();msg('Room closed.');return}
   const v=snap.val(),players=Object.entries(v.players||{}),ready=v.ready||{};
+  observeArrival83(code,v.players||{});
   const bothReady=players.length===2&&players.every(([id])=>ready[id]===true);
   const hasCountdown=Number.isFinite(v.countdownAt);
   view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><h3>PLAYERS ('+players.length+'/2)</h3>'+
-    players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(id===v.host?' 👑 HOST':'')+' — '+(ready[id]?'✅ READY':'⏳ NOT READY')+'</p>').join('')+
+    players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(isCreator(id)?' <span class="arrival83listbadge">★ BEST DEVELOPER ★</span>':'')+(id===v.host?' 👑 HOST':'')+' — '+(ready[id]?'✅ READY':'⏳ NOT READY')+'</p>').join('')+
     '<p class="on75muted">'+(hasCountdown?'Both ready!':bothReady?'Starting countdown…':'Both players must ready up.')+'</p>'+
     (hasCountdown?'<h2 id="on81countdown">NIGHT STARTS IN 5…</h2>':'<button id="on81ready">'+(ready[uid]?'❌ UNREADY':'✅ READY UP')+'</button>')+
     '<button id="on75leave">LEAVE ROOM</button></div>');
