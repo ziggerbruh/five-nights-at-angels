@@ -2413,7 +2413,7 @@ function view(html,title='ONLINE MULTIPLAYER'){content.innerHTML=html;$75('on75t
 function open(){panel.hidden=false; if(!uid){view('<p>Connecting to Firebase…</p>');connect()}else home()}
 function close(){panel.hidden=true}
 $75('online75Open').addEventListener('click',open);$75('on76LeaderboardMenu').addEventListener('click',()=>{panel.hidden=false;if(!uid){view('<p>Connecting to Firebase…</p>','LEADERBOARDS');connect().then(()=>showLeaderboard()).catch(()=>{});}else showLeaderboard()});
-$75('updates75Open').addEventListener('click',()=>{panel.hidden=false;view('<div class="on75card"><h3>UPDATE 76 — START + LEADERBOARD</h3><p>✓ Firebase anonymous player IDs</p><p>✓ One-time permanent usernames</p><p>✓ Create or join private two-player lobbies</p><p>✓ Live lobby player list</p><p>✓ Host Start Game button</p><p>✓ Shared lobby launch signal</p><p>✓ Leaderboard preview</p><p class="on75muted">The two phones launch their own night when the host starts. Gameplay actions are not yet synchronized. Leaderboard publishing requires updated Firebase rules.</p></div>','UPDATE LOG')});
+$75('updates75Open').addEventListener('click',()=>{panel.hidden=false;view('<div class="on75card"><h3>UPDATE 79 — START + LEADERBOARD</h3><p>✓ Firebase anonymous player IDs</p><p>✓ One-time permanent usernames</p><p>✓ Create or join private two-player lobbies</p><p>✓ Live lobby player list</p><p>✓ Host Start Game button</p><p>✓ Shared lobby launch signal</p><p>✓ Leaderboard preview</p><p class="on75muted">The two phones launch their own night when the host starts. Gameplay actions are not yet synchronized. Leaderboard publishing requires updated Firebase rules.</p></div>','UPDATE LOG')});
 $75('on75close').addEventListener('click',close);
 async function connect(){if(connecting)return;connecting=true;try{const app=initializeApp(cfg);auth=getAuth(app);db=getDatabase(app);await signInAnonymously(auth);uid=auth.currentUser?.uid;if(!uid)throw Error('Could not sign in');const snap=await get(ref(db,'profiles/'+uid));profile=snap.exists()?snap.val():null;home()}catch(e){view('<p>Connection failed. Check internet and Firebase configuration.</p><button id="on75retry">RETRY</button>');$75('on75retry').onclick=()=>{connecting=false;connect()};msg(e.message)}finally{connecting=false}}
 function home(){if(!profile){view('<div class="on75card"><h3>CHOOSE YOUR FOREVER NAME</h3><p>Your username cannot be changed after confirming. Use a nickname, not your real name or private information.</p><input id="on75name" maxlength="20" placeholder="Your username" autocomplete="off"><br><button id="on75save">LOCK IN USERNAME</button><p class="on75muted">3–20 characters. No control characters or abusive names.</p></div>');$75('on75save').onclick=saveName;return}
@@ -2449,11 +2449,20 @@ async function showLeaderboard(category=activeBoardCategory){
  }catch(e){const target=$75('on76scores');if(target)target.textContent='Rankings unavailable until Firebase leaderboard rules allow reading. '+e.message}
 }
 async function startRoom(code){
+ const button=$75('on76start');if(button)button.disabled=true;
  try{
   const r=ref(db,'rooms/'+code),snap=await get(r),v=snap.val();
   if(!v||v.host!==uid||Object.keys(v.players||{}).length!==2){msg('Both players must be in the room.');return}
-  await update(r,{status:'started',launchId:Date.now(),night:1});
- }catch(e){msg('Could not start game: '+e.message)}
+  // Write the child paths permitted by Firebase rules; publish status LAST.
+  // This avoids object equality checks on the entire players map.
+  await set(ref(db,'rooms/'+code+'/night'),1);
+  await set(ref(db,'rooms/'+code+'/launchId'),Date.now());
+  await set(ref(db,'rooms/'+code+'/status'),'started');
+  const confirmed=await get(r);
+  if(!confirmed.exists()||confirmed.val().status!=='started')throw new Error('Firebase did not confirm the start.');
+  launchSharedNight(code,confirmed.val().launchId);
+ }catch(e){msg('START GAME FAILED: '+e.message);console.error('Firebase start failed',e)}
+ finally{if(button&&button.isConnected)button.disabled=false}
 }
 function launchSharedNight(code,launchId){
  if(lastLaunch===code+':'+launchId)return;
@@ -2471,10 +2480,10 @@ function watchRoom(code){leaveListener();room=code;const myRoom=ref(db,'rooms/'+
  roomStartPoll=setInterval(async()=>{
   if(room!==code||!db)return;
   try{const snap=await get(myRoom);if(room!==code||!snap.exists())return;
-   const v=snap.val();if(v.status==='started'&&v.launchId)launchSharedNight(code,v.launchId);
+   const v=snap.val();if(v.status==='started'&&v.launchId&&v.host!==uid)launchSharedNight(code,v.launchId);
   }catch(e){console.warn('Lobby start check:',e.message)}
  },1500);
- unsub=onValue(myRoom,snap=>{if(room!==code)return;if(!snap.exists()){leaveListener();home();msg('Room closed.');return}const v=snap.val(),players=Object.entries(v.players||{});view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><p>Share this code with a friend.</p><h3>PLAYERS ('+players.length+'/2)</h3>'+players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(id===v.host?' 👑 HOST':'')+'</p>').join('')+'<p class="on75muted">'+(v.status==='started'?'Game started!':players.length===2?'Both players connected! Host can start.':'Waiting for another player…')+'</p>'+(v.host===uid&&v.status!=='started'?'<button id="on76start" '+(players.length!==2?'disabled':'')+'>▶ START GAME</button>':'')+'<button id="on75leave">LEAVE ROOM</button></div>');if($75('on76start'))$75('on76start').onclick=()=>startRoom(code);if(v.status==='started'&&v.launchId)launchSharedNight(code,v.launchId);$75('on75leave').onclick=leaveRoom},e=>msg('Lobby read error: '+e.message));}
+ unsub=onValue(myRoom,snap=>{if(room!==code)return;if(!snap.exists()){leaveListener();home();msg('Room closed.');return}const v=snap.val(),players=Object.entries(v.players||{});view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><p>Share this code with a friend.</p><h3>PLAYERS ('+players.length+'/2)</h3>'+players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(id===v.host?' 👑 HOST':'')+'</p>').join('')+'<p class="on75muted">'+(v.status==='started'?'Game started!':players.length===2?'Both players connected! Host can start.':'Waiting for another player…')+'</p>'+(v.host===uid&&v.status!=='started'?'<button id="on76start" '+(players.length!==2?'disabled':'')+'>▶ START GAME</button>':'')+'<button id="on75leave">LEAVE ROOM</button></div>');if($75('on76start'))$75('on76start').onclick=()=>startRoom(code);if(v.status==='started'&&v.launchId&&v.host!==uid)launchSharedNight(code,v.launchId);$75('on75leave').onclick=leaveRoom},e=>msg('Lobby read error: '+e.message));}
 async function leaveRoom(){const code=room;leaveListener();if(code)try{await set(ref(db,'rooms/'+code+'/players/'+uid),null)}catch(e){}home()}
 </script>
 </body></html>
