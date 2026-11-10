@@ -2571,7 +2571,7 @@ let roomStartPoll=null;
 function stopRoomStartPoll(){if(roomStartPoll!==null){clearInterval(roomStartPoll);roomStartPoll=null}}
 function leaveListener(){endArrival83();arrivalSeen.clear();stop82();stopCount();stopShared();stopRoomStartPoll();if(unsub){unsub();unsub=null}room=null}
 async function createRoom(){if(!uid||!profile)return;msg('Creating room…');for(let i=0;i<5;i++){const code=String(Math.floor(100000+Math.random()*900000));try{const r=ref(db,'rooms/'+code);const result=await runTransaction(r,old=>old===null?{host:uid,createdAt:Date.now(),players:{[uid]:{name:profile.name,joinedAt:Date.now()}}}:undefined,{applyLocally:false});if(result.committed){watchRoom(code);return}}catch(e){msg('Room creation failed: '+e.message);return}}msg('Could not find a free room code. Try again.')}
-async function joinRoom(code){if(!/^\d{6}$/.test(code)){msg('Enter a six-digit code.');return}msg('Joining room…');try{const snap=await get(ref(db,'rooms/'+code));if(!snap.exists()){msg('Room not found.');return}const players=snap.val().players||{};if(snap.val().countdownAt||snap.val().status==='started'){msg('Game already starting.');return}if(!players[uid]&&Object.keys(players).length>=2){msg('Room is full.');return}await set(ref(db,'rooms/'+code+'/players/'+uid),{name:profile.name,joinedAt:Date.now()});watchRoom(code)}catch(e){msg('Could not join: '+e.message)}}
+async function joinRoom(code){if(!/^\d{6}$/.test(code)){msg('Enter a six-digit code.');return}msg('Joining room…');try{const snap=await get(ref(db,'rooms/'+code));if(!snap.exists()){msg('Room not found.');return}const players=snap.val().players||{};if(snap.val().countdownAt||snap.val().status==='started'){msg('Game already starting.');return}if(!players[uid]&&Object.keys(players).length>=4){msg('Room is full.');return}await set(ref(db,'rooms/'+code+'/players/'+uid),{name:profile.name,joinedAt:Date.now()});watchRoom(code)}catch(e){msg('Could not join: '+e.message)}}
 const boardCategories=[
  ['endlessBest','♾️ ENDLESS HIGH SCORES','shifts'],
  ['taskFrenzyCompletions','📋 TASK FRENZY','completions'],
@@ -2600,13 +2600,13 @@ async function toggleReady(code,ready){
  if(!db||room!==code)return;
  try{
   await set(ref(db,'rooms/'+code+'/ready/'+uid),!!ready);
-  msg(ready?'You are READY! Waiting for your friend…':'You are not ready.');
+  msg(ready?'You are READY! Waiting for teammates…':'You are not ready.');
  }catch(e){msg('READY FAILED: '+e.message)}
 }
 async function startCountdownIfReady(code,v){
  if(!v||v.host!==uid||v.status==='started'||v.countdownAt)return;
  const ids=Object.keys(v.players||{});
- if(ids.length!==2||!ids.every(id=>v.ready&&v.ready[id]===true))return;
+ if(ids.length<2||ids.length>4||!ids.every(id=>v.ready&&v.ready[id]===true))return;
  try{
   const at=Date.now()+5000;
   const result=await runTransaction(ref(db,'rooms/'+code+'/countdownAt'),old=>old===null?at:undefined,{applyLocally:false});
@@ -2676,11 +2676,11 @@ function watchRoom(code){leaveListener();room=code;const myRoom=ref(db,'rooms/'+
   if(!snap.exists()){leaveListener();home();msg('Room closed.');return}
   const v=snap.val(),players=Object.entries(v.players||{}),ready=v.ready||{};
   observeArrival83(code,v.players||{});
-  const bothReady=players.length===2&&players.every(([id])=>ready[id]===true);
+  const bothReady=players.length>=2&&players.length<=4&&players.every(([id])=>ready[id]===true);
   const hasCountdown=Number.isFinite(v.countdownAt);
-  view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><h3>PLAYERS ('+players.length+'/2)</h3>'+
+  view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><h3>PLAYERS ('+players.length+'/4)</h3>'+
     players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(isCreator(id)?' <span class="arrival83listbadge">★ BEST DEVELOPER ★</span>':'')+(id===v.host?' 👑 HOST':'')+' — '+(ready[id]?'✅ READY':'⏳ NOT READY')+'</p>').join('')+
-    '<p class="on75muted">'+(hasCountdown?'Both ready!':bothReady?'Starting countdown…':'Both players must ready up.')+'</p>'+
+    '<p class="on75muted">'+(hasCountdown?'Everyone ready!':bothReady?'Starting countdown…':'At least 2 players required; everyone present must READY UP.')+'</p>'+
     (hasCountdown?'<h2 id="on81countdown">NIGHT STARTS IN 5…</h2>':'<button id="on81ready">'+(ready[uid]?'❌ UNREADY':'✅ READY UP')+'</button>')+
     '<button id="on75leave">LEAVE ROOM</button></div>');
   if($75('on81ready'))$75('on81ready').onclick=()=>toggleReady(code,!ready[uid]);
