@@ -1885,9 +1885,15 @@ function updateRepairLoading(){
  const pct=Math.min(99,Math.floor((performance.now()-repairLoadStarted)/50));
  $('utilityProgress').textContent='RECONNECTING… '+pct+'%';
 }
-function generatorTick(dt){if(!generatorHeld||!running||!cams||utilityMode!=='generator'||blackout)return;
-const units=Math.min(dt*8,slurpy/2,100-power);if(units<=0)return;
-power+=units;slurpy-=units*2;generatorUses+=units;renderUtility();}
+let remoteGenerator84Until=0;
+function generatorTick(dt){
+ if(online82&&!online82Host)return;
+ const localHeld=generatorHeld&&cams&&utilityMode==='generator';
+ const remoteHeld=online82&&Date.now()<remoteGenerator84Until;
+ if((!localHeld&&!remoteHeld)||!running||blackout)return;
+ const units=Math.min(dt*8,slurpy/2,100-power);if(units<=0)return;
+ power+=units;slurpy-=units*2;generatorUses+=units;renderUtility();
+}
 // During the five-second signal reset, the guard must remain at the repair screen.
 document.addEventListener('click',function(e){
  if(!repairLoading||!running)return;
@@ -1898,8 +1904,17 @@ document.addEventListener('click',function(e){
  $('notice').textContent='🔧 SIGNAL RESET IN PROGRESS — WAIT 5 SECONDS!';
 },true);
 $('eleanorTaser').onclick=taserEleanor;$('generatorTab').onclick=()=>setUtility('generator');$('repairTab').onclick=()=>setUtility('repair');
-$('utilityAction').addEventListener('pointerdown',e=>{if(utilityMode==='repair'){repairTap();return}if(!running||!cams||slurpy<2||power>=100)return;generatorHeld=true;try{$('utilityAction').setPointerCapture(e.pointerId)}catch(err){}});
-['pointerup','pointercancel','lostpointercapture'].forEach(ev=>$('utilityAction').addEventListener(ev,()=>generatorHeld=false));
+$('utilityAction').addEventListener('pointerdown',e=>{if(utilityMode==='repair'){repairTap();return}if(!running||!cams||slurpy<2||power>=100)return;generatorHeld=true;
+if(online82&&!online82Host)window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'generator84',on:true}}));
+try{$('utilityAction').setPointerCapture(e.pointerId)}catch(err){}});
+['pointerup','pointercancel','lostpointercapture'].forEach(ev=>$('utilityAction').addEventListener(ev,()=>{
+ generatorHeld=false;
+ if(online82&&!online82Host)window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'generator84',on:false}}));
+}));
+// Send lightweight keepalives while held; host applies the actual power transfer.
+setInterval(()=>{if(online82&&!online82Host&&generatorHeld&&running&&cams&&utilityMode==='generator')
+ window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'generator84',on:true}}));
+},650);
 
 
 
@@ -2482,7 +2497,8 @@ window.fnaa82RemoteAction=a=>{
  window.fnaa84RemoteAction(a);
  if(a.type==='flash'&&a.on){online82RemoteFlash={x:a.x,y:a.y,until:Date.now()+950};}
  if(a.type==='flash'&&!a.on)online82RemoteFlash=null;
- if(a.type==='slurpy'){if(a.on)slurpy=Math.min(100,slurpy+3);}
+ if(a.type==='generator84')remoteGenerator84Until=a.on?Date.now()+1500:0;
+ if(a.type==='slurpy'){if(a.on)slurpy=Math.min(100,slurpy+4.55);}
  if(a.type==='taser'&&ziggyActive&&a.vent===ziggyVent){ziggyActive=false;ziggyHits++;ziggyNext=23+Math.random()*10}
  if(a.type==='mask'&&a.on&&alexActive){alexActive=false;alexNext=18+Math.random()*16;alexDanger=0}
  if(a.type==='mar'&&Number.isInteger(a.index)&&marMinions[a.index]){marMinions[a.index].node.remove();marMinions.splice(a.index,1);marCleared++}
@@ -2492,7 +2508,7 @@ window.fnaa82Win=()=>{if(running){online82Applying=true;win();online82Applying=f
 window.fnaa82Retry=()=>{if(!online82)return false;window.dispatchEvent(new Event('fnaa82-retry'));return true};
 document.addEventListener('click',e=>{if(e.target.closest('#retry')&&online82){e.preventDefault();e.stopImmediatePropagation();window.fnaa82Retry()}},true);
 window.addEventListener('pointerdown',e=>{if(!online82||!running)return;setTimeout(()=>window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'flash',on:!!(flashOffice||flashCam),x:Math.max(0,Math.min(100,flashPointerX/Math.max(1,innerWidth)*100)),y:Math.max(0,Math.min(100,flashPointerY/Math.max(1,innerHeight)*100)),cam:cams?(utilityMode==='craig'?'craig':ventMode?'vent '+(vent+1):'CAM '+(cam+1)):'OFFICE'}})),80)},true);
-setInterval(()=>{if(online82&&!online82Host&&running&&refilling&&cams&&cam===1&&!ventMode&&utilityMode==='cams')window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'slurpy',on:true}}))},230);
+setInterval(()=>{if(online82&&!online82Host&&running&&refilling&&cams&&cam===1&&!ventMode&&utilityMode==='cams')window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'slurpy',on:true}}))},350);
 window.addEventListener('pointermove',e=>{if(!online82||!running||flashlightPointer===null)return;const r=$('game').getBoundingClientRect();window._fnaa82Flash=!!(flashOffice||flashCam);flashPointerX=e.clientX;flashPointerY=e.clientY;},{passive:true});
 window.addEventListener('pointerup',()=>{if(online82)window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'flash',on:false}}))});
 document.addEventListener('click',e=>{if(!online82||!running)return;const id=e.target.closest('button')?.id;if(['normalTab','craigTab','camToggle','camButton','taserbtn','refill','maskbtn'].includes(id)||id?.startsWith('cam'))setTimeout(()=>window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:id==='taserbtn'?'taser':id==='refill'?'slurpy':id==='maskbtn'?'mask':'view',on:true,vent,cam:cams?(utilityMode==='craig'?'CRAIG SHOP':ventMode?'VENT '+(vent+1):'CAM '+(cam+1)):'OFFICE'}})),50)},true);
@@ -2572,20 +2588,39 @@ function begin82(code,launchId){
   else co82.push(onValue(ref(db,base+'/actions'),snap=>{const v=snap.val()||{};for(const [id,a] of Object.entries(v)){if(id!==uid&&a.session===co82Session&&a.seq!==co82Seq){if(!window._fnaa82Seen)window._fnaa82Seen={};if(window._fnaa82Seen[id]!==a.seq){window._fnaa82Seen[id]=a.seq;window.fnaa82RemoteAction?.(a)}}}}));
   co82.push(onValue(ref(db,base+'/players'),snap=>{const players=snap.val()||{};window.fnaa84PlayerList?.(players,uid);const names=Object.entries(players).filter(([id,p])=>p&&p.session===co82Session).map(([id,p])=>escapeHTML(p.name||'Player')+': '+escapeHTML(p.view||'OFFICE')+(p.flash?' 🔦':'')).join(' | ');show82HUD().textContent=names||'Co-op connected';}));
   co82.push(onValue(ref(db,base+'/outcome'),snap=>{const v=snap.val();if(!v||v.session!==co82Session)return;const key=v.kind+':'+v.at;if(co82LastLoss===key)return;co82LastLoss=key;if(v.kind==='lose')window.fnaa82Lose?.(v.by);if(v.kind==='win')window.fnaa82Win?.()}));
-  co82.push(onValue(ref(db,base+'/retry'),snap=>{const v=snap.val()||{};if(v.session!==co82Session)return;const ids=Object.keys(v.ready||{});if(ids.length>=2&&ids.length<=4&&ids.length===Object.keys(window._fnaa84LobbyPlayers||{}).length&&ids.every(id=>v.ready[id]===true)&&co82Host&&!v.at){runTransaction(ref(db,base+'/retry/at'),old=>old===null?Date.now()+3000:undefined,{applyLocally:false}).catch(console.warn)}if(v.at){showRetry82(v.at);if(co82Host&&Date.now()>=v.at)finishRetry82(code,base,v.at)}}));
-  co82.push(onValue(ref(db,base+'/retryLaunch'),snap=>{const at=snap.val();if(!at||at===window._fnaa82LastRetry)return;window._fnaa82LastRetry=at;document.getElementById('fnaa82retry')?.remove();co82LastLoss='';window.fnaaStartOnlineNight?.();send82('coop82/retry/ready/'+uid,null);if(co82Host){send82('coop82/outcome',null);send82('coop82/state',null);send82('coop82/retry',null)}}));
+  co82.push(onValue(ref(db,base+'/retry'),snap=>{const v=snap.val()||{};if(v.session!==co82Session)return;retry84Ready=v.ready||{};if(document.getElementById('fnaa82retry'))showRetry82(v.at||0);const ids=Object.keys(v.ready||{});if(ids.length>=2&&ids.length<=4&&ids.length===Object.keys(window._fnaa84LobbyPlayers||{}).length&&ids.every(id=>v.ready[id]===true)&&co82Host&&!v.at){runTransaction(ref(db,base+'/retry/at'),old=>old===null?Date.now()+3000:undefined,{applyLocally:false}).catch(console.warn)}if(v.at){showRetry82(v.at);if(co82Host&&Date.now()>=v.at)finishRetry82(code,base,v.at)}}));
+  co82.push(onValue(ref(db,base+'/retryLaunch'),snap=>{const at=snap.val();if(!at||at===window._fnaa82LastRetry)return;window._fnaa82LastRetry=at;document.getElementById('fnaa82retry')?.remove();retry84Deadline=0;retry84Ready={};if(retry84Timer){clearInterval(retry84Timer);retry84Timer=null}co82LastLoss='';window.fnaaStartOnlineNight?.();send82('coop82/retry/ready/'+uid,null);if(co82Host){send82('coop82/outcome',null);send82('coop82/state',null);send82('coop82/retry',null)}}));
   co82Ticker=setInterval(()=>{
-   const rt=document.getElementById('fnaa82retry');if(rt&&rt.textContent.includes('RETRY IN')){get(ref(db,base+'/retry/at')).then(s=>{if(s.exists()){showRetry82(s.val());if(co82Host&&Date.now()>=s.val())finishRetry82(code,base,s.val())}}).catch(()=>{})}
+   const rt=document.getElementById('fnaa82retry');if(rt&&retry84Deadline&&co82Host&&Date.now()>=retry84Deadline)finishRetry82(code,base,retry84Deadline)
    if(room!==code||!window.fnaa82Running?.())return;
    if(co82Host)send82('coop82/state',{session:co82Session,data:window.fnaa82Snapshot?.()});
-   send82('coop82/players/'+uid,{name:profile?.name||'Player',session:co82Session,view:window._fnaa82View||'OFFICE',flash:!!window._fnaa82Flash,...(window.fnaa84PlayerData?.()||{})});
-  },350);
+   const pdata={name:profile?.name||'Player',session:co82Session,view:window._fnaa82View||'OFFICE',flash:!!window._fnaa82Flash,...(window.fnaa84PlayerData?.()||{})};const pj=JSON.stringify(pdata);if(pj!==window._fnaa84LastPData||Date.now()-(window._fnaa84LastPAt||0)>1200){window._fnaa84LastPData=pj;window._fnaa84LastPAt=Date.now();send82('coop82/players/'+uid,pdata)}
+  },650);
  });
 }
-function showRetry82(at){let el=document.getElementById('fnaa82retry');if(!el){el=document.createElement('div');el.id='fnaa82retry';el.style.cssText='position:fixed;inset:0;z-index:99998;background:#070b14ee;color:white;display:grid;place-items:center;font:bold 30px monospace;text-align:center';document.body.append(el)}const remaining=Math.max(0,Math.ceil((at-Date.now())/1000));el.textContent='CO-OP RETRY IN '+remaining;}
+let retry84Deadline=0,retry84Timer=null,retry84Ready={};
+function retry84Roster(){
+ const lobby=window._fnaa84LobbyPlayers||{};
+ const ids=Object.keys(lobby);
+ const ready=retry84Ready||{};
+ const rows=ids.map(id=>{const p=lobby[id]||{};return (p.name||'Player')+' — '+(ready[id]?'✅ READY':'⏳ NOT READY')});
+ return rows.length?rows.join('\\n'):'Waiting for teammates…';
+}
+function retry84Paint(){
+ const el=document.getElementById('fnaa82retry');if(!el)return;
+ const remain=retry84Deadline?Math.max(0,Math.ceil((retry84Deadline-Date.now())/1000)):null;
+ el.textContent=(remain===null?'READY FOR RETRY':remain>0?'CO-OP RETRY IN '+remain:'STARTING NIGHT…')+'\\n\\n'+retry84Roster();
+}
+function showRetry82(at){
+ let el=document.getElementById('fnaa82retry');
+ if(!el){el=document.createElement('div');el.id='fnaa82retry';el.style.cssText='position:fixed;inset:0;z-index:99998;background:#070b14ee;color:white;display:grid;place-items:center;font:bold 23px monospace;text-align:center;white-space:pre-line;padding:20px';document.body.append(el)}
+ retry84Deadline=at||0;retry84Paint();
+ if(!retry84Timer)retry84Timer=setInterval(()=>{if(!document.getElementById('fnaa82retry')){clearInterval(retry84Timer);retry84Timer=null;return}retry84Paint()},200);
+}
+
 let retry82Busy=false;
 async function finishRetry82(code,base,at){if(retry82Busy)return;retry82Busy=true;try{await set(ref(db,base+'/retryLaunch'),at)}catch(e){console.warn(e)}finally{retry82Busy=false}}
-window.addEventListener('fnaa82-retry',()=>{if(!room||!co82Session)return;document.getElementById('jump')?.classList.add('hidden');let el=document.getElementById('fnaa82retry');if(!el){el=document.createElement('div');el.id='fnaa82retry';el.style.cssText='position:fixed;inset:0;z-index:99998;background:#070b14ee;color:white;display:grid;place-items:center;font:bold 24px monospace;text-align:center';document.body.append(el)}el.textContent='READIED UP! WAITING FOR TEAMMATE…';send82('coop82/retry/session',co82Session);send82('coop82/retry/ready/'+uid,true)});
+window.addEventListener('fnaa82-retry',()=>{if(!room||!co82Session)return;document.getElementById('jump')?.classList.add('hidden');let el=document.getElementById('fnaa82retry');if(!el){el=document.createElement('div');el.id='fnaa82retry';el.style.cssText='position:fixed;inset:0;z-index:99998;background:#070b14ee;color:white;display:grid;place-items:center;font:bold 24px monospace;text-align:center';document.body.append(el)}retry84Ready[uid]=true;showRetry82(0);send82('coop82/retry/session',co82Session);send82('coop82/retry/ready/'+uid,true)});
 window.addEventListener('fnaa82-loss',e=>{if(co82Host)send82('coop82/outcome',{session:co82Session,kind:'lose',by:e.detail.by,at:Date.now()})});
 window.addEventListener('fnaa82-win',()=>{if(co82Host)send82('coop82/outcome',{session:co82Session,kind:'win',at:Date.now()})});
 window.addEventListener('fnaa82-activity',e=>{if(!room||!co82Session)return;const a=e.detail||{};if(a.cam)window._fnaa82View=a.cam;window._fnaa82Flash=!!a.on&&a.type==='flash';if(!co82Host&&a.type!=='view')send82('coop82/actions/'+uid,{...a,session:co82Session,seq:++co82Seq})});
