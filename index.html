@@ -471,6 +471,25 @@ body[data-officeskin="baby"] .office{box-shadow:inset 0 0 90px #395e82a0!importa
 #nightPauseSettings input{width:100%;accent-color:#67caff}
 #nightPauseConfirm{display:none;color:#ffd1a6}
 #nightPauseConfirm.open{display:block}
+ 
+/* Update 84: Eric walks slowly across the rear window during his six-second approach. */
+#rear84 img.eric84:not(.hidden) {
+  left: 0 !important;
+  right: auto !important;
+  height: 72%;
+  max-width: 60%;
+  object-fit: contain;
+  object-position: bottom center;
+  animation: ericWindowWalk84 6s linear both;
+  will-change: transform;
+}
+@keyframes ericWindowWalk84 {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(190%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #rear84 img.eric84:not(.hidden) { animation-duration: 6s; }
+}
 </style><style id="ratFlipperStyle">#ratFlipperOverlay{position:absolute;z-index:36;left:40%;top:32%;width:20%;height:23%;pointer-events:none;display:flex;justify-content:center;align-items:center;overflow:hidden;border:2px solid #5b626b;border-radius:6px;background:#080a0b}#ratFlipperOverlay.hidden{display:none!important}#ratFlipperPeek{width:100%;height:100%;object-fit:cover;filter:brightness(.30) grayscale(.85)}#ratFlipperEyes{position:absolute;color:#b8b9c0;text-shadow:0 0 10px #d6d9e8,0 0 20px #8e939f;letter-spacing:12px;font-size:20px;font-weight:900;top:28%}#taskFrenzyBoard{touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:auto!important;cursor:grab;max-width:240px!important;max-height:145px!important;overflow:hidden!important}#taskFrenzyBoard.tfDragging{cursor:grabbing}#taskFrenzyBoard .tfRow{font-size:12px}#taskFrenzyBoard small{font-size:10px}</style><style id="taskFrenzyStyle">#taskFrenzyBoard{position:fixed;z-index:6200;right:8px;top:88px;width:min(310px,43vw);max-height:45vh;overflow:auto;background:#090e16ee;color:#eaf6ff;border:2px solid #d7a955;border-radius:10px;padding:10px;font:700 clamp(10px,2vw,13px) monospace;pointer-events:none;box-shadow:0 4px 20px #0009}#taskFrenzyBoard.hidden{display:none!important}#taskFrenzyBoard h3{color:#ffdb78;margin:0 0 8px;font-size:15px}#taskFrenzyBoard .tfRow{padding:5px 0;border-top:1px solid #ffffff25}#taskFrenzyBoard .tfDone{color:#81f7a6}#taskFrenzyBoard small{display:block;color:#9eb4d0;margin-top:5px}body.taskFrenzyActive #taskHud{display:none!important}</style><style id="mode69Style">
 #newModesOverlay{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:15000;overflow:auto;padding:20px;box-sizing:border-box;color:white;font-family:monospace;text-align:center}#newModesOverlay.hidden,#mode69Hud.hidden,#mode69Alert.hidden{display:none!important}.mode69Panel{max-width:550px;margin:12px auto}.mode69Panel h1{color:#ffd35a;font-size:clamp(24px,6vw,36px)}.mode69Panel>p{color:#bbb}.mode69Card{border:2px solid #987c35;background:#16171e;margin:18px 0;padding:16px;border-radius:12px}.mode69Card h2{color:#ffe07b;margin:0 0 12px}.mode69Card p{line-height:1.5}.mode69Panel button{font:700 15px monospace;min-height:49px;border:2px solid #ffdb74;border-radius:8px;background:#332812;color:white;padding:10px;margin:8px;touch-action:manipulation;user-select:none;-webkit-user-select:none}#backModes69{background:#292929;border-color:#999}#mode69Hud{position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#08090ce8;color:#ffe58b;border:1px solid #b18c31;padding:7px 10px;z-index:6000;text-align:center;max-width:65vw;pointer-events:none;border-radius:6px;font:700 12px monospace}#mode69Hud span{display:block;color:white;font-size:11px;margin-top:3px}#mode69Alert{position:fixed;top:63px;left:50%;transform:translateX(-50%);background:#2b1845;color:#fff;border:2px solid #b582ff;padding:10px 15px;z-index:6100;max-width:75vw;text-align:center;border-radius:7px;font:700 12px monospace;pointer-events:none}
 </style><style id="update74style">
@@ -1443,8 +1462,10 @@ function lose(by){if(online82&&!online82Applying){if(!online82Host)return;window
  eleanor:['ELEANOR GOT YOU!','Check the GENERATOR ROOM and TASER Eleanor before she destroys the power!','GENERATOR SABOTAGE!'],
  blackout:['POWER OUT! ZIGGY GOT YOU!','Power was out for five seconds! Keep the generator powered and stop Eleanor!','BLACKOUT JUMPSCARE!'],mynor:['MYNOR GOT YOU!','Hold the flashlight on Mynor for 2–4 seconds when he enters your office!','MYNOR ATTACK!'],bbnolarp:['BBNOLARP GOT YOU!','Close the matching door or find Bbnolarp in the vents and tase him!','FINAL BOSS ATTACK!']
 };
+deathInfo.eric=['ERIC GOT YOU!','Turn around and wear your mask when you hear heavy footsteps. Never shine the flashlight on Eric!','ERIC WINDOW ATTACK!'];
+deathInfo.lebron=['LEBRON GOT YOU!','Click LeBron within 10 seconds to give him the mask, then retrieve it from the cameras.','LEBRON MASK ATTACK!'];
 const info=by==='joel'?['JOEL GOT INTO YOUR OFFICE!','Watch for his eyes in either office vent. Close the matching shutter for three seconds.','THE VENT STALKER STRIKES!']:deathInfo[by]||deathInfo.angel;
-const face={angel:$('angel').src,kid:$('newkid').src,kaleb:$('kalebPhoto').src,buckley:$('buckley').src,alex:$('alexOffice').src,golden:$('angel').src,ziggy:$('ziggy').src,goon:$('goonPortrait').src,mar:$('marPortrait').src,eleanor:$('eleanorPhoto').src,blackout:$('blackoutPhoto').src,mynor:MYNOR_PHOTO,bbnolarp:$('bbnolarpPhoto').src,'bbnolarp-generator':$('bossSpecialPhoto').src,joel:$('joelPhoto').src,babyziggy:$('babyZiggyPhoto').src,ratflipper:$('ratFlipperPhoto').src};
+const face={angel:$('angel').src,kid:$('newkid').src,kaleb:$('kalebPhoto').src,buckley:$('buckley').src,alex:$('alexOffice').src,golden:$('angel').src,ziggy:$('ziggy').src,goon:$('goonPortrait').src,mar:$('marPortrait').src,eleanor:$('eleanorPhoto').src,blackout:$('blackoutPhoto').src,mynor:MYNOR_PHOTO,bbnolarp:$('bbnolarpPhoto').src,'bbnolarp-generator':$('bossSpecialPhoto').src,joel:$('joelPhoto').src,eric:'eric.jpg',lebron:'lebron.jpg',babyziggy:$('babyZiggyPhoto').src,ratflipper:$('ratFlipperPhoto').src};
 $('jumpface').src=face[by]||face.angel;
 $('jumpface').classList.toggle('blackoutRush',by==='blackout');
 $('jumpface').style.filter=by==='golden'?'sepia(1) saturate(5) hue-rotate(347deg) brightness(1.25)':by==='bbnolarp-generator'?'contrast(1.35) saturate(1.8) drop-shadow(0 0 22px #183ec7)':'';
@@ -2413,7 +2434,7 @@ let rear84=false, eric84={active:false,timer:0,next:22}, lebron84={active:false,
 let players84={}, myId84='', eric84Safe={}, last84Foot=0;
 const online84=()=>online82;
 function reset84(){rear84=false;eric84={active:false,timer:0,next:new84AI('eric')===0?Infinity:(30-new84AI('eric')*.6)+Math.random()*12};lebron84={active:false,timer:0,next:new84AI('lebron')===0?Infinity:(48-new84AI('lebron')*.8)+Math.random()*14};maskMissing84=false;maskCamera84=0;eric84Safe={};render84()}
-function render84(){const turn=$('turn84'),rear=$('rear84');if(!turn||!rear)return;turn.classList.toggle('hidden',!running||cams);turn.textContent=rear84?'↻ FACE OFFICE':'↻ TURN AROUND';rear.classList.toggle('active',running&&!cams&&rear84);const e=$('eric84img'),l=$('lebron84img');e.classList.toggle('hidden',!eric84.active);l.classList.toggle('hidden',!lebron84.active);$('rear84prompt').classList.toggle('hidden',!lebron84.active);$('rear84prompt').textContent='GIVE ME THE MASK · '+Math.max(0,Math.ceil(10-lebron84.timer));$('maskbtn').classList.toggle('hidden',maskMissing84||maskOn);$('takeoffbtn').classList.toggle('hidden',!maskOn);if(maskMissing84&&maskOn){maskOn=false;$('maskOverlay').classList.add('hidden')};const pick=$('maskPickup84');if(pick)pick.classList.toggle('hidden',!maskMissing84||!cams||ventMode||utilityMode!=='cams'||cam!==maskCamera84)}
+function render84(){const turn=$('turn84'),rear=$('rear84');if(!turn||!rear)return;turn.classList.toggle('hidden',!running||cams);turn.textContent=rear84?'↻ FACE OFFICE':'↻ TURN AROUND';rear.classList.toggle('active',running&&!cams&&rear84);const e=$('eric84img'),l=$('lebron84img');e.classList.toggle('hidden',!eric84.active);e.style.animationDelay=eric84.active?(-Math.min(6,Math.max(0,eric84.timer)))+'s':'0s';l.classList.toggle('hidden',!lebron84.active);$('rear84prompt').classList.toggle('hidden',!lebron84.active);$('rear84prompt').textContent='GIVE ME THE MASK · '+Math.max(0,Math.ceil(10-lebron84.timer));$('maskbtn').classList.toggle('hidden',maskMissing84||maskOn);$('takeoffbtn').classList.toggle('hidden',!maskOn);if(maskMissing84&&maskOn){maskOn=false;$('maskOverlay').classList.add('hidden')};const pick=$('maskPickup84');if(pick)pick.classList.toggle('hidden',!maskMissing84||!cams||ventMode||utilityMode!=='cams'||cam!==maskCamera84)}
 function lose84(by){if(online82&&!online82Host)return;lose(by)}
 function tick84(dt){if(!running||blackout)return;
  if(!eric84.active){eric84.next-=dt;if(eric84.next<=0&&!maskMissing84&&!lebron84.active){eric84.active=true;eric84.timer=0;eric84Safe={};last84Foot=0;beep(90,.25,'sawtooth')}}else{eric84.timer+=dt;if(eric84.timer-last84Foot>.75){last84Foot=eric84.timer;beep(72,.13,'triangle')}
