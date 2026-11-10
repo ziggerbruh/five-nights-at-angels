@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Five Nights at Angel's: Slurpy Shift</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Five Nights at Angel's: Slurpy Shift</title><!-- Update 89: gift catalog, Kaleb multiplayer refill, Extras fallback fixes --><style>
 *{box-sizing:border-box}body{margin:0;background:#050609;color:#e5e9e9;font-family:monospace;overflow:hidden}button{font:inherit;touch-action:manipulation;cursor:pointer}#game{position:relative;width:100vw;height:100dvh;min-height:420px;overflow:hidden;background:radial-gradient(ellipse at 50% 60%,#34373c,#0b0b10 70%)}.office{position:absolute;inset:0;background:linear-gradient(90deg,#101116 0 18%,transparent 28% 72%,#101116 82%),repeating-linear-gradient(0deg,transparent 0 47px,#18191e 49px 51px);}.door{position:absolute;top:19%;width:20%;height:62%;border:8px ridge #35383e;background:#08090d}.door.left{left:0}.door.right{right:0}.door.closed:after{content:'LOCKED';position:absolute;inset:0;background:repeating-linear-gradient(0deg,#555a60 0 14px,#2c3037 15px 26px);display:grid;place-items:center;color:#ed6565;letter-spacing:2px;writing-mode:vertical-rl;font-size:20px}.eyes{position:absolute;top:38%;width:100%;text-align:center;color:#f33;text-shadow:0 0 14px red;font-size:28px}.desk{position:absolute;bottom:12%;left:19%;width:62%;height:14%;background:linear-gradient(#424046,#15161a);border-top:8px solid #777}.fan{position:absolute;top:47%;left:46%;font-size:65px;color:#777;animation:spin 3s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.top{position:absolute;z-index:5;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;gap:8px;font-weight:bold;text-shadow:2px 2px black}.hudright{text-align:right}.controls{position:absolute;z-index:7;bottom:12px;width:100%;display:flex;justify-content:space-around;gap:7px;padding:0 10px}.btn{border:2px solid #737d81;border-radius:5px;color:white;background:#242b32;padding:12px 10px;min-height:48px;font-weight:bold}.btn.on{background:#852c31;border-color:#fa6666}.btn:active{filter:brightness(1.4)}.hidden{display:none!important}.overlay{position:absolute;z-index:20;inset:0;background:#08090bf5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:13px}.overlay h1{font-size:clamp(24px,7vw,46px);margin:0;color:#e8e8e8}.overlay p{max-width:440px;line-height:1.6}.overlay .btn{min-width:180px}.small{font-size:12px;color:#aeb9bd}.red{color:#ff6666!important}.green{color:#87e8b5!important}#camview{position:absolute;z-index:8;inset:0;background:#0d1013;display:flex;flex-direction:column;padding:54px 12px 76px;gap:8px}#feed{position:relative;flex:1;min-height:0;overflow:hidden;border:3px solid #758184;background:radial-gradient(#353a40,#0a0b0e)}#feed:after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 5px,#0007 6px 8px);z-index:4}#camlabel{position:absolute;z-index:5;top:8px;left:9px;background:#000b;padding:6px}.character{position:absolute;bottom:-6%;left:50%;transform:translateX(-50%);height:88%;max-width:75%;object-fit:cover;filter:grayscale(.85) contrast(1.5) brightness(.65)}#empty{position:absolute;top:48%;width:100%;text-align:center;color:#8b989d}#slurpyPanel{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:radial-gradient(#402132,#0c0b11)}#slurpyPanel img{height:50%;max-width:60%;object-fit:cover;filter:contrast(1.2) brightness(.7);border:3px solid #614153}#slurpyPanel .meter{width:min(75%,300px);height:18px;border:2px solid #ddd;background:#200e18}#slurpyFill{height:100%;background:#ff79b3;width:100%}#refill{position:relative;z-index:6;background:#a13873;border-color:#ff9bc8}#slurpyWarning{color:#ff8eae;font-size:12px;text-align:center}#cams{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}#cams .btn{font-size:12px;padding:8px;min-height:40px}#cams .active{border-color:#9dffd8;color:#9dffd8}#powerbar{display:inline-block;width:62px;height:9px;border:1px solid #bbb}#powerfill{display:block;width:100%;height:100%;background:#80e2a0}#usage{position:absolute;z-index:5;bottom:81px;left:12px;font-size:12px}#jump{background:#30040a;animation:flash .16s infinite alternate}@keyframes flash{to{background:#070000}}#jump img{width:min(92vw,450px);height:min(56vh,440px);object-fit:cover;border-radius:25%;animation:chomp .28s infinite alternate;filter:contrast(1.8) saturate(1.3)}@keyframes chomp{to{transform:scale(1.35) rotate(-5deg)}}#bite{font-size:clamp(26px,9vw,56px);font-weight:900;color:#ff7777;text-shadow:3px 3px #000}#menuPortraits{display:flex;gap:12px;justify-content:center}#menuPortraits img{height:110px;width:110px;object-fit:cover;filter:brightness(.8);border:2px solid #555}#nightselect{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}.night{min-width:46px}#notice{position:absolute;top:50%;width:100%;z-index:7;text-align:center;color:#ff88b8;font-weight:bold;pointer-events:none;text-shadow:0 0 12px #000}
 #buckley{position:absolute;z-index:30;width:42%;height:60%;object-fit:cover;border:3px solid #ffdb71;border-radius:12px;box-shadow:0 0 24px #ffb900;cursor:pointer;touch-action:manipulation;animation:buckpulse .8s infinite alternate} @keyframes buckpulse{to{filter:brightness(1.3);transform:scale(1.04)}}#buckleyTimer{position:absolute;z-index:31;right:8px;top:8px;color:#ffcf69;background:#000c;padding:8px;font-weight:bold}#motivation{font-size:18px;color:#ffda77;font-weight:bold;max-width:440px;line-height:1.5}
 #alexOffice{position:absolute;z-index:6;left:50%;top:18%;transform:translateX(-50%);height:57%;max-width:64%;object-fit:cover;filter:brightness(.7) contrast(1.25);border:3px solid #3263d8;box-shadow:0 0 35px #1859e9}#maskOverlay{position:absolute;inset:0;z-index:9;pointer-events:none;background:linear-gradient(90deg,#080b14 0 23%,transparent 42% 58%,#080b14 77%),linear-gradient(0deg,#05060b 0 28%,transparent 45% 72%,#05060b 95%);border:25px solid #131c2b;border-radius:38% 38% 16% 16%;box-shadow:inset 0 0 65px 30px #05060b}#maskMessage{position:absolute;z-index:10;top:22%;left:10%;right:10%;text-align:center;color:#9cc4ff;font-weight:bold;text-shadow:0 0 8px #000}#maskbtn{border-color:#739dfb}#maskbtn.on{background:#214aa4;border-color:#a8c9ff}
@@ -1106,7 +1106,7 @@ function installEncyclopedia(){
   card.addEventListener('click',open);
   card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
  };
- grid.querySelectorAll('.extraCard').forEach(bind);
+ grid.querySelectorAll('.extraCard').forEach(card=>{bind(card);const img=card.querySelector('img');if(img&&!img.dataset.fnaaFallback){img.dataset.fnaaFallback='1';img.addEventListener('error',()=>{img.style.display='none';if(!card.querySelector('.fnaaPortraitMissing')){const label=document.createElement('div');label.className='fnaaPortraitMissing';label.textContent='📷 IMAGE FILE MISSING';label.style.cssText='min-width:95px;min-height:95px;display:grid;place-items:center;text-align:center;color:#ffcc82;background:#25232c;border:1px solid #666';img.after(label)}})}});
  const observer=new MutationObserver(()=>grid.querySelectorAll('.extraCard').forEach(bind));
  observer.observe(grid,{childList:true});
 }
@@ -2093,7 +2093,7 @@ elapsed+=dt;hour=Math.min(6,Math.floor(elapsed/(duration/6)));if(elapsed>=durati
 if(alexActive){if(maskOn){alexMaskTime+=dt;if(alexMaskTime>=2){alexActive=false;alexNext=18+Math.random()*16;alexDanger=0;alexMaskTime=0;beep(330,.14,'triangle');setTimeout(()=>beep(180,.22,'triangle'),160)}}else{alexMaskTime=0;alexDanger+=dt;if(alexDanger>=5){lose('alex');return}}}else if(enabled(4)&&!goldenActive){alexNext-=dt;if(alexNext<=0){alexActive=true;alexDanger=0;alexMaskTime=0;if(cams){cams=false;ventMode=false;refilling=false;beep(120,.34,'sawtooth');setTimeout(()=>beep(70,.3,'square'),110)}beep(930,.22,'sawtooth');setTimeout(()=>beep(600,.24,'sawtooth'),230)}}
 if(!blackout){
 slurpy=Math.max(0,Math.min(100,slurpy-dt*(enabled(2)?(.34+(night-1)*.19)*danger(2):0)+(refilling&&cams&&!ventMode&&utilityMode==='cams'&&cameraOffline!==1&&cam===1?dt*13:0)));
-if(enabled(2)&&slurpy===0&&!puppetAttack){puppetAttack=true;puppetClock=0;beep(90,.3)}if(puppetAttack){puppetClock+=dt;if(puppetClock>5){lose('kaleb');return}}
+if(enabled(2)&&slurpy===0&&!puppetAttack){puppetAttack=true;puppetClock=0;beep(90,.3)}if(puppetAttack&&slurpy>0){puppetAttack=false;puppetClock=0;}if(puppetAttack){puppetClock+=dt;if(puppetClock>5){lose('kaleb');return}}
 kidClock+=dt*(enabled(1)?danger(1):0);
 if(enabled(1)&&kidPos===3){if(left){if(!wyattRetreat)wyattRetreat=5+Math.random()*4}else{kidAttackClock+=dt;if(kidAttackClock>2.8){lose('kid');return}}}
 if(wyattRetreat>0){if(!left){wyattRetreat=0}else{wyattRetreat-=dt;if(wyattRetreat<=0){doorBlocks++;wyattRetreat=0;kidPos=0;kidClock=0;kidAttackClock=0;departureSound();}}}
@@ -2292,7 +2292,7 @@ for(const type of ['contextmenu','selectstart','dragstart']){
   if(e.target.closest('#game,#nightPauseOverlay,#nightPauseButton'))e.preventDefault();
  },{passive:false});
 }
-function menu(){nightPaused=false;nightPauseOverlayHide();if(repairLoading&&running)return;hideEnding();secretMode=false;document.body.classList.remove('secretFire');setAmbience('menu');cancelRepairLoad();stopFlashlight();stopPhone();maskOn=false;running=false;refilling=false;$('menu').classList.remove('hidden');$('win').classList.add('hidden');$('jump').classList.add('hidden');drawNights();showMenuPage('main')}$('mainMenu1').onclick=menu;$('mainMenu2').onclick=menu;$('leftbtn').onclick=()=>{if(!running||blackout)return;left=!left;beep();render()};$('rightbtn').onclick=()=>{if(!running||blackout)return;right=!right;beep();render()};$('exitcam').onclick=()=>{if(!running||repairLoading)return;cams=false;refilling=false;generatorHeld=false;beep(300,.07);render()};$('cambtn').onclick=()=>{if(!running||blackout||maskOn||repairLoading)return;cams=!cams;refilling=false;generatorHeld=false;if(cams)kalebCamTalk(true);ziggyCamTalk(true);beep(380);render()};document.querySelectorAll('[data-cam]').forEach(b=>b.onclick=()=>{if(repairLoading)return;cam=Number(b.dataset.cam);nightEvents++;setUtility('cams');kalebCamTalk(true);ziggyCamTalk(true);ventMode=false;refilling=false;beep(420,.04);render()});const refill=$('refill');refill.addEventListener('pointerdown',e=>{if(running&&cams&&!ventMode&&utilityMode==='cams'&&cameraOffline!==1&&cam===1&&!blackout){refilling=true;refill.setPointerCapture(e.pointerId);beep(450,.1)}});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>refill.addEventListener(ev,()=>refilling=false));
+function menu(){nightPaused=false;nightPauseOverlayHide();if(repairLoading&&running)return;hideEnding();secretMode=false;document.body.classList.remove('secretFire');setAmbience('menu');cancelRepairLoad();stopFlashlight();stopPhone();maskOn=false;running=false;refilling=false;$('menu').classList.remove('hidden');$('win').classList.add('hidden');$('jump').classList.add('hidden');drawNights();showMenuPage('main')}$('mainMenu1').onclick=menu;$('mainMenu2').onclick=menu;$('leftbtn').onclick=()=>{if(!running||blackout)return;left=!left;beep();render()};$('rightbtn').onclick=()=>{if(!running||blackout)return;right=!right;beep();render()};$('exitcam').onclick=()=>{if(!running||repairLoading)return;cams=false;refilling=false;generatorHeld=false;beep(300,.07);render()};$('cambtn').onclick=()=>{if(!running||blackout||maskOn||repairLoading)return;cams=!cams;refilling=false;generatorHeld=false;if(cams)kalebCamTalk(true);ziggyCamTalk(true);beep(380);render()};document.querySelectorAll('[data-cam]').forEach(b=>b.onclick=()=>{if(repairLoading)return;cam=Number(b.dataset.cam);nightEvents++;setUtility('cams');kalebCamTalk(true);ziggyCamTalk(true);ventMode=false;refilling=false;beep(420,.04);render()});const refill=$('refill');refill.addEventListener('pointerdown',e=>{if(running&&cams&&!ventMode&&utilityMode==='cams'&&cameraOffline!==1&&cam===1&&!blackout){refilling=true;try{refill.setPointerCapture(e.pointerId)}catch(_){}beep(450,.1)}});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>refill.addEventListener(ev,()=>refilling=false));
 let creditsRunning=false;
 function openCredits(){
  const overlay=$('creditsOverlay'),content=overlay.querySelector('.creditsContent');
@@ -2530,7 +2530,7 @@ window.fnaa82RemoteAction=a=>{
  if(a.type==='flash'&&a.on){online82RemoteFlash={x:a.x,y:a.y,until:Date.now()+950};}
  if(a.type==='flash'&&!a.on)online82RemoteFlash=null;
  if(a.type==='generator84')remoteGenerator84Until=a.on?Date.now()+1500:0;
- if(a.type==='slurpy'){if(a.on)slurpy=Math.min(100,slurpy+4.55);}
+ if(a.type==='slurpy'&&a.on){slurpy=Math.min(100,slurpy+6);if(slurpy>0){puppetAttack=false;puppetClock=0;}}
  if(a.type==='taser'&&ziggyActive&&a.vent===ziggyVent){ziggyActive=false;ziggyHits++;ziggyNext=23+Math.random()*10}
  if(a.type==='mask'&&a.on&&alexActive){alexActive=false;alexNext=18+Math.random()*16;alexDanger=0}
  if(a.type==='mar'&&Number.isInteger(a.index)&&marMinions[a.index]){marMinions[a.index].node.remove();marMinions.splice(a.index,1);marCleared++}
@@ -2563,7 +2563,7 @@ document.addEventListener('click',function(e){
 initializeSaveSystem();
 drawNights();showMenuPage('main');render();
 // Update 78: expose the actual night starter to the Firebase module.
-window.fnaaStartOnlineNight = function(){ night=1; customMode=false; secretMode=false; reset(); };
+window.fnaaStartOnlineNight = function(nextNight=1){ night=Math.max(1,Math.min(6,Number(nextNight)||1)); customMode=false; secretMode=false; activeSave={mode:'classic'}; reset(); };
 </script>
 <style>
 #online75Panel{position:fixed;inset:0;z-index:99999;background:#070b14f7;color:#edf5ff;overflow-y:auto;padding:20px 14px 70px;font:15px system-ui,sans-serif;text-align:center}
@@ -2606,12 +2606,7 @@ const DEVELOPER_UID='S3f6iCJGvKOmz0w7gMzogtyMgV42'; // Update 83: set once to th
 const isCreator=id=>DEVELOPER_UID!=='REPLACE_WITH_YOUR_FIREBASE_UID'&&id===DEVELOPER_UID;
 
 // Update 86: creator-only Firebase gift delivery. Server rules MUST authorize writes.
-const gift86Catalog=[
- ['character-babyziggy-special','Baby Ziggy Special','baby_ziggy_special.jpg'],
- ['character-eric-standing','Standing Eric','standing_eric.jpg'],
- ['character-mar-crying','Crying Mar','crying_mar.jpg'],
- ['character-wyatt-freaky','Freaky Wyatt','freaky_wyatt.png']
-];
+const gift86Catalog=characterSkins.map(item=>[item.id,item.name,item.photo]);
 let gift86Unsub=null,gift86PresenceStarted=false,gift86Busy=false;
 function gift86Picture(id){return gift86Catalog.find(x=>x[0]===id)?.[2]||''}
 function gift86Label(id){return gift86Catalog.find(x=>x[0]===id)?.[1]||id}
@@ -2671,29 +2666,50 @@ const $75=id=>document.getElementById(id),panel=$75('online75Panel'),content=$75
 let auth,db,uid=null,profile=null,room=null,unsub=null,connecting=false,lastLaunch=null;
 let countTimer=null, sharedControlsUnsub=null, sharedControlsRoom=null, lastControlsJSON='';
 let co82=[], co82Ticker=null, co82Host=false, co82Session='', co82Seq=0, co82LastLoss='';
-function stop82(){co82.forEach(f=>f());co82=[];if(co82Ticker)clearInterval(co82Ticker);co82Ticker=null;co82Session='';window.fnaa82Role?.(false,false);document.getElementById('fnaa82hud')?.remove()}
+let coop87Night=1, coop87Outcome='', coop87Spectators={};
+function stop82(){spectator88=false;spectator88Draw();co82.forEach(f=>f());co82=[];if(co82Ticker)clearInterval(co82Ticker);co82Ticker=null;co82Session='';window.fnaa82Role?.(false,false);document.getElementById('fnaa82hud')?.remove()}
 function send82(path,value){if(!room||!db||!co82Session)return;set(ref(db,'rooms/'+room+'/'+path),value).catch(e=>console.warn('Co-op sync:',e.message))}
 function show82HUD(){let el=document.getElementById('fnaa82hud');if(!el){el=document.createElement('div');el.id='fnaa82hud';el.style.cssText='position:absolute;top:40px;right:8px;z-index:18;background:#050c17dd;color:#aaf4ff;border:1px solid #5ab8cf;padding:5px 8px;font:11px monospace;pointer-events:none;max-width:48vw';document.getElementById('game').append(el)}return el}
 function begin82(code,launchId){
- stop82();co82Session=String(launchId);co82Host=false;
+ stop82();co82Session=String(launchId);co82Host=false;coop87Outcome='';
  get(ref(db,'rooms/'+code+'/host')).then(s=>{
   if(room!==code||co82Session!==String(launchId))return;
   co82Host=s.val()===uid;window.fnaa82Role?.(true,co82Host);
   const base='rooms/'+code+'/coop82';
   if(!co82Host)co82.push(onValue(ref(db,base+'/state'),snap=>{if(room!==code||!snap.exists())return;const v=snap.val();if(v.session===co82Session)window.fnaa82ApplySnapshot?.(v.data)}));
   else co82.push(onValue(ref(db,base+'/actions'),snap=>{const v=snap.val()||{};for(const [id,a] of Object.entries(v)){if(id!==uid&&a.session===co82Session&&a.seq!==co82Seq){if(!window._fnaa82Seen)window._fnaa82Seen={};if(window._fnaa82Seen[id]!==a.seq){window._fnaa82Seen[id]=a.seq;window.fnaa82RemoteAction?.(a)}}}}));
-  co82.push(onValue(ref(db,base+'/players'),snap=>{const players=snap.val()||{};window.fnaa84PlayerList?.(players,uid);const names=Object.entries(players).filter(([id,p])=>p&&p.session===co82Session).map(([id,p])=>escapeHTML(p.name||'Player')+': '+escapeHTML(p.view||'OFFICE')+(p.flash?' 🔦':'')).join(' | ');show82HUD().textContent=names||'Co-op connected';}));
-  co82.push(onValue(ref(db,base+'/outcome'),snap=>{const v=snap.val();if(!v||v.session!==co82Session)return;const key=v.kind+':'+v.at;if(co82LastLoss===key)return;co82LastLoss=key;if(v.kind==='lose')window.fnaa82Lose?.(v.by);if(v.kind==='win')window.fnaa82Win?.()}));
+  co82.push(onValue(ref(db,base+'/players'),snap=>{const players=snap.val()||{};spectator88Players=players;if(spectator88)spectator88Draw();window.fnaa84PlayerList?.(players,uid);const names=Object.entries(players).filter(([id,p])=>p&&p.session===co82Session).map(([id,p])=>escapeHTML(p.name||'Player')+': '+escapeHTML(p.view||'OFFICE')+(p.flash?' 🔦':'')).join(' | ');show82HUD().textContent=names||'Co-op connected';}));
+  co82.push(onValue(ref(db,base+'/outcome'),snap=>{const v=snap.val();if(!v||v.session!==co82Session)return;const key=v.kind+':'+v.at;if(co82LastLoss===key)return;co82LastLoss=key;if(v.kind==='lose'){coop87Outcome='lose';window.fnaa82Lose?.(v.by);showRetry82(0)}if(v.kind==='win'){coop87Outcome='win';window.fnaa82Win?.();setTimeout(()=>{showRetry82(0);if(co82Host)send82('coop82/retry/session',co82Session)},350)}}));
   co82.push(onValue(ref(db,base+'/retry'),snap=>{const v=snap.val()||{};if(v.session!==co82Session)return;retry84Ready=v.ready||{};if(document.getElementById('fnaa82retry'))showRetry82(v.at||0);const ids=Object.keys(v.ready||{});if(ids.length>=2&&ids.length<=4&&ids.length===Object.values(window._fnaa84LobbyPlayers||{}).filter(Boolean).length&&ids.every(id=>v.ready[id]===true)&&co82Host&&!v.at){runTransaction(ref(db,base+'/retry/at'),old=>old===null?Date.now()+3000:undefined,{applyLocally:false}).catch(console.warn)}if(v.at){showRetry82(v.at);if(co82Host&&Date.now()>=v.at)finishRetry82(code,base,v.at)}}));
-  co82.push(onValue(ref(db,base+'/retryLaunch'),snap=>{const at=snap.val();if(!at||at===window._fnaa82LastRetry)return;window._fnaa82LastRetry=at;document.getElementById('fnaa82retry')?.remove();retry84Deadline=0;retry84Ready={};if(retry84Timer){clearInterval(retry84Timer);retry84Timer=null}co82LastLoss='';window.fnaaStartOnlineNight?.();send82('coop82/retry/ready/'+uid,null);if(co82Host){send82('coop82/outcome',null);send82('coop82/state',null);send82('coop82/retry',null)}}));
+  co82.push(onValue(ref(db,base+'/retry/nextNight'),snap=>{if(snap.exists())window._fnaa87PendingNight=Number(snap.val())||coop87Night}));
+  co82.push(onValue(ref(db,base+'/retryLaunch'),snap=>{const at=snap.val();if(!at||at===window._fnaa82LastRetry)return;window._fnaa82LastRetry=at;document.getElementById('fnaa82retry')?.remove();retry84Deadline=0;retry84Ready={};if(retry84Timer){clearInterval(retry84Timer);retry84Timer=null}co82LastLoss='';coop87Night=Math.max(1,Math.min(6,Number(window._fnaa87PendingNight)||coop87Night));coop87Outcome='';spectator88=false;spectator88Draw();window.fnaaStartOnlineNight?.(coop87Night);send82('coop82/retry/ready/'+uid,null);if(co82Host){send82('coop82/outcome',null);send82('coop82/state',null);send82('coop82/retry',null)}}));
   co82Ticker=setInterval(()=>{
    const rt=document.getElementById('fnaa82retry');if(rt&&retry84Deadline&&co82Host&&Date.now()>=retry84Deadline)finishRetry82(code,base,retry84Deadline)
    if(room!==code||!window.fnaa82Running?.())return;
    if(co82Host)send82('coop82/state',{session:co82Session,data:window.fnaa82Snapshot?.()});
-   const pdata={name:profile?.name||'Player',session:co82Session,view:window._fnaa82View||'OFFICE',flash:!!window._fnaa82Flash,...(window.fnaa84PlayerData?.()||{})};const pj=JSON.stringify(pdata);if(pj!==window._fnaa84LastPData||Date.now()-(window._fnaa84LastPAt||0)>1200){window._fnaa84LastPData=pj;window._fnaa84LastPAt=Date.now();send82('coop82/players/'+uid,pdata)}
+   const pdata={name:profile?.name||'Player',session:co82Session,spectator:spectator88,view:window._fnaa82View||'OFFICE',flash:!spectator88&&!!window._fnaa82Flash,...(window.fnaa84PlayerData?.()||{})};const pj=JSON.stringify(pdata);if(pj!==window._fnaa84LastPData||Date.now()-(window._fnaa84LastPAt||0)>1200){window._fnaa84LastPData=pj;window._fnaa84LastPAt=Date.now();send82('coop82/players/'+uid,pdata)}
   },650);
  });
 }
+
+// UPDATE 88: local spectator UI, synchronized with the per-player presence records.
+let spectator88=false, spectator88Target='', spectator88Players={};
+function spectator88Draw(){
+ let panel=document.getElementById('fnaa88spectator');
+ if(!spectator88){panel?.remove();return}
+ if(!panel){panel=document.createElement('div');panel.id='fnaa88spectator';panel.style.cssText='position:fixed;inset:0;z-index:99980;background:#05080de9;color:#e8f6ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;text-align:center;padding:20px;font:bold 18px monospace';document.body.append(panel)}
+ const living=Object.entries(spectator88Players).filter(([id,p])=>id!==uid&&p&&p.session===co82Session&&!p.spectator);
+ if(!living.some(([id])=>id===spectator88Target))spectator88Target=living[0]?.[0]||'';
+ const chosen=spectator88Players[spectator88Target];
+ panel.replaceChildren();
+ const heading=document.createElement('h2');heading.textContent='👁 SPECTATOR MODE';panel.append(heading);
+ const info=document.createElement('p');info.textContent=chosen?'Watching '+(chosen.name||'Teammate')+' · '+(chosen.view||'OFFICE')+(chosen.flash?' 🔦':''):'Waiting for surviving teammates…';panel.append(info);
+ const switcher=document.createElement('div');switcher.style.cssText='display:flex;gap:9px;flex-wrap:wrap;justify-content:center';
+ for(const [id,player] of living){const b=document.createElement('button');b.textContent='WATCH '+(player.name||'PLAYER');b.style.cssText='padding:12px;border:1px solid #a9d7ff;background:#1d3549;color:white;border-radius:8px';b.onclick=()=>{spectator88Target=id;spectator88Draw()};switcher.append(b)}panel.append(switcher);
+ const tip=document.createElement('small');tip.textContent='You cannot control doors, vents or the flashlight while spectating. Wait for your team to finish.';panel.append(tip);
+}
+function spectator88Set(active){spectator88=!!active;document.getElementById('jump')?.classList.add('hidden');spectator88Draw()}
+window.addEventListener('fnaa88-spectate',()=>spectator88Set(true));
 let retry84Deadline=0,retry84Timer=null,retry84Ready={};
 function retry84Roster(){
  const lobby=window._fnaa84LobbyPlayers||{};
@@ -2705,20 +2721,23 @@ function retry84Roster(){
 function retry84Paint(){
  const el=document.getElementById('fnaa82retry');if(!el)return;
  const remain=retry84Deadline?Math.max(0,Math.ceil((retry84Deadline-Date.now())/1000)):null;
- el.textContent=(remain===null?'READY FOR RETRY':remain>0?'CO-OP RETRY IN '+remain:'STARTING NIGHT…')+'\\n\\n'+retry84Roster();
+ const label=(remain===null?(coop87Outcome==='win'?'NIGHT '+coop87Night+' COMPLETE!':'READY FOR RETRY'):remain>0?'NEXT NIGHT IN '+remain:'STARTING NIGHT…')+'\nNEXT: NIGHT '+(coop87Outcome==='win'?Math.min(6,coop87Night+1):coop87Night)+'\n\n'+retry84Roster();
+ let text=el.querySelector('#fnaa87Status');if(!text){text=document.createElement('div');text.id='fnaa87Status';el.prepend(text)}text.textContent=label;
+ const button=el.querySelector('#fnaa87Ready');if(button){button.disabled=!!retry84Ready[uid]||!!retry84Deadline;button.textContent=retry84Ready[uid]?'✅ YOU ARE READY':'✅ READY UP'}
 }
 function showRetry82(at){
  let el=document.getElementById('fnaa82retry');
- if(!el){el=document.createElement('div');el.id='fnaa82retry';el.style.cssText='position:fixed;inset:0;z-index:99998;background:#070b14ee;color:white;display:grid;place-items:center;font:bold 23px monospace;text-align:center;white-space:pre-line;padding:20px';document.body.append(el)}
+ if(!el){el=document.createElement('div');el.id='fnaa82retry';el.style.cssText='position:fixed;inset:0;z-index:99998;background:#070b14ee;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;font:bold 23px monospace;text-align:center;white-space:pre-line;padding:20px';document.body.append(el)}
+ if(!el.querySelector('#fnaa87Ready')){const button=document.createElement('button');button.id='fnaa87Ready';button.style.cssText='margin:22px auto;padding:14px 22px;border:2px solid #83f6b3;background:#173e31;color:white;border-radius:10px;font:bold 18px monospace';button.onclick=()=>window.dispatchEvent(new Event('fnaa82-retry'));el.append(button)}
  retry84Deadline=at||0;retry84Paint();
  if(!retry84Timer)retry84Timer=setInterval(()=>{if(!document.getElementById('fnaa82retry')){clearInterval(retry84Timer);retry84Timer=null;return}retry84Paint()},200);
 }
 
 let retry82Busy=false;
 async function finishRetry82(code,base,at){if(retry82Busy)return;retry82Busy=true;try{await set(ref(db,base+'/retryLaunch'),at)}catch(e){console.warn(e)}finally{retry82Busy=false}}
-window.addEventListener('fnaa82-retry',()=>{if(!room||!co82Session)return;document.getElementById('jump')?.classList.add('hidden');let el=document.getElementById('fnaa82retry');if(!el){el=document.createElement('div');el.id='fnaa82retry';el.style.cssText='position:fixed;inset:0;z-index:99998;background:#070b14ee;color:white;display:grid;place-items:center;font:bold 24px monospace;text-align:center';document.body.append(el)}retry84Ready[uid]=true;showRetry82(0);if(co82Host)send82('coop82/retry/session',co82Session);send82('coop82/retry/ready/'+uid,true)});
-window.addEventListener('fnaa82-loss',e=>{if(co82Host)send82('coop82/outcome',{session:co82Session,kind:'lose',by:e.detail.by,at:Date.now()})});
-window.addEventListener('fnaa82-win',()=>{if(co82Host)send82('coop82/outcome',{session:co82Session,kind:'win',at:Date.now()})});
+window.addEventListener('fnaa82-retry',()=>{if(!room||!co82Session)return;document.getElementById('jump')?.classList.add('hidden');let el=document.getElementById('fnaa82retry');if(!el){el=document.createElement('div');el.id='fnaa82retry';el.style.cssText='position:fixed;inset:0;z-index:99998;background:#070b14ee;color:white;display:grid;place-items:center;font:bold 24px monospace;text-align:center';document.body.append(el)}retry84Ready[uid]=true;showRetry82(0);if(co82Host){send82('coop82/retry/session',co82Session);send82('coop82/retry/nextNight',coop87Outcome==='win'?Math.min(6,coop87Night+1):coop87Night)}send82('coop82/retry/ready/'+uid,true)});
+window.addEventListener('fnaa82-loss',e=>{if(co82Host){coop87Outcome='lose';send82('coop82/outcome',{session:co82Session,kind:'lose',by:e.detail.by,at:Date.now()})}});
+window.addEventListener('fnaa82-win',()=>{if(co82Host){coop87Outcome='win';send82('coop82/outcome',{session:co82Session,kind:'win',at:Date.now()})}});
 window.addEventListener('fnaa82-activity',e=>{if(!room||!co82Session)return;const a=e.detail||{};if(a.cam)window._fnaa82View=a.cam;window._fnaa82Flash=!!a.on&&a.type==='flash';if(!co82Host&&a.type!=='view')send82('coop82/actions/'+uid,{...a,session:co82Session,seq:++co82Seq})});
 
 function stopCount(){if(countTimer!==null){clearInterval(countTimer);countTimer=null}}
@@ -2875,7 +2894,7 @@ function launchSharedNight(code,launchId){
  panel.hidden=true;
  try{
   // Launches the existing local game on both phones; not yet shared gameplay state.
-  if(typeof window.fnaaStartOnlineNight==='function'){window.fnaaStartOnlineNight()}
+  if(typeof window.fnaaStartOnlineNight==='function'){coop87Night=1;window.fnaaStartOnlineNight(coop87Night)}
   else{msg('Could not open the night automatically.');panel.hidden=false;return}
  }catch(e){panel.hidden=false;msg('Game launch failed: '+e.message)}
 }
@@ -2911,7 +2930,7 @@ function watchRoom(code){leaveListener();room=code;const myRoom=ref(db,'rooms/'+
   view('<div class="on75card"><p>PRIVATE ROOM CODE</p><div class="on75code">'+code+'</div><h3>PLAYERS ('+players.length+'/4)</h3>'+
     players.map(([id,p])=>'<p>🎮 '+escapeHTML(p.name)+(isCreator(id)?' <span class="arrival83listbadge">★ BEST DEVELOPER ★</span>':'')+(id===v.host?' 👑 HOST':'')+' — '+(ready[id]?'✅ READY':'⏳ NOT READY')+'</p>').join('')+
     '<p class="on75muted">'+(hasCountdown?'Everyone ready!':bothReady?'Starting countdown…':'At least 2 players required; everyone present must READY UP.')+'</p>'+
-    (hasCountdown?'<h2 id="on81countdown">NIGHT STARTS IN 5…</h2>':'<button id="on81ready">'+(ready[uid]?'❌ UNREADY':'✅ READY UP')+'</button>')+
+    (hasCountdown?'<h2 id="on81countdown">NIGHT 1 STARTS IN 5…</h2>':'<button id="on81ready">'+(ready[uid]?'❌ UNREADY':'✅ READY UP')+'</button>')+
     '<button id="on75leave">LEAVE ROOM</button></div>');
   if($75('on81ready'))$75('on81ready').onclick=()=>toggleReady(code,!ready[uid]);
   $75('on75leave').onclick=leaveRoom;
