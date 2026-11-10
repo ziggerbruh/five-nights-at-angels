@@ -2814,7 +2814,41 @@ function gift86EnsureButton(){
 }
 function home(){if(isCreator(uid))gift86EnsureButton();if(!profile){view('<div class="on75card"><h3>CHOOSE YOUR FOREVER NAME</h3><p>Your username cannot be changed after confirming. Use a nickname, not your real name or private information.</p><input id="on75name" maxlength="20" placeholder="Your username" autocomplete="off"><br><button id="on75save">LOCK IN USERNAME</button><p class="on75muted">3–20 characters. No control characters or abusive names.</p></div>');$75('on75save').onclick=saveName;return}
 view('<div class="on75card"><h3>WELCOME, '+escapeHTML(profile.name)+'</h3><p class="on75muted">Permanent player profile</p><button id="on75create">CREATE PRIVATE ROOM</button>'+(isCreator(uid)?'<br><button id="gift86online">🎁 GIFT CENTER</button>':'')+'<br><button id="on83uid" type="button">SHOW MY ACCOUNT ID (PRIVATE)</button><p id="on83uidtext" hidden style="overflow-wrap:anywhere;user-select:text;font-size:12px"></p><br><button id="on76board">🏆 GLOBAL LEADERBOARD</button><p>OR</p><input id="on75joincode" placeholder="6-digit room code" inputmode="numeric" maxlength="6"><br><button id="on75join">JOIN ROOM</button></div><p class="on75muted">2–4 players per lobby. At least two players must ready up to begin.</p>');if($75('on83uid'))$75('on83uid').onclick=()=>{const x=$75('on83uidtext');x.hidden=!x.hidden;x.textContent=uid||'Not signed in';};if($75('gift86online'))$75('gift86online').onclick=gift86Menu;$75('on75create').onclick=createRoom;$75('on76board').onclick=showLeaderboard;$75('on75join').onclick=()=>joinRoom($75('on75joincode').value.trim())}
-async function saveName(){const name=$75('on75name').value.trim();if(name.length<3||name.length>20||/[\u0000-\u001f\u007f<>]/.test(name)){msg('Choose a name with 3–20 characters, without angle brackets or control characters.');return}if(!confirm('Lock in "'+name+'" forever? You cannot rename this account.'))return;try{const p=ref(db,'profiles/'+uid);const result=await runTransaction(p,old=>old===null?{name,createdAt:Date.now()}:undefined,{applyLocally:false});if(!result.committed){msg('This account already has a permanent name.');const snap=await get(p);profile=snap.val()}else profile=result.snapshot.val();home()}catch(e){msg('Could not save name: '+e.message)}}
+async function saveName(){
+ const field=$75('on75name'),button=$75('on75save');
+ const name=(field?.value||'').trim();
+ if(name.length<3||name.length>20||/[\\u0000-\\u001f\\u007f<>]/.test(name)){
+  msg('Choose a name with 3–20 characters.');return;
+ }
+ if(!db||!uid){msg('Still connecting. Please try again in a moment.');return;}
+ if(!confirm('Lock in "'+name+'" forever? You cannot rename this account.'))return;
+ if(button){button.disabled=true;button.textContent='SAVING USERNAME…';}
+ try{
+  const p=ref(db,'profiles/'+uid);
+  // The Firebase rules allow only the first creation. Avoid transactions
+  // here: a failed transaction can leave the registration UI stuck.
+  const existing=await get(p);
+  if(existing.exists()){
+   profile=existing.val();home();return;
+  }
+  await set(p,{name,createdAt:Date.now()});
+  const saved=await get(p);
+  if(!saved.exists())throw Error('Profile was not saved. Please retry.');
+  profile=saved.val();home();
+ }catch(e){
+  console.error('Username registration failed:',e);
+  let detail=e?.code||e?.message||'Unknown error';
+  if(String(detail).includes('permission_denied')||String(detail).includes('PERMISSION_DENIED'))
+   detail='Firebase rejected the profile. Check that the published database rules allow profiles/$uid creation.';
+  msg('Could not lock in username: '+detail);
+  const error=document.getElementById('on75nameError')||document.createElement('p');
+  error.id='on75nameError';error.style.cssText='color:#ffb7b7;overflow-wrap:anywhere;font-weight:bold';
+  error.textContent='Could not lock in username: '+detail;
+  button?.insertAdjacentElement('afterend',error);
+ }finally{
+  if(button){button.disabled=false;button.textContent='LOCK IN USERNAME';}
+ }
+}
 // Update 83 — a one-time heavenly lobby entrance per room and creator join.
 let arrivalSeen=new Set(), arrivalTimer=null, arrivalAudio=null;
 function endArrival83(){
