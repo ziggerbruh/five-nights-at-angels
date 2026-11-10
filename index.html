@@ -2054,7 +2054,7 @@ if(phoneState==='ringing'){phoneRing+=dt;if(phoneRing>=2.2){phoneRing=0;beep(670
   }
  }
 }
-elapsed+=dt;hour=Math.min(6,Math.floor(elapsed/(duration/6)));if(elapsed>=duration){if(mode69==='endless'){mode69EndlessNext()}else{win();return}}let drain=.31+(left?.40:0)+(right?.40:0)+(cams?.25:0)+(flashOffice?.40:0)+(flashCam&&cams?.38:0);power=Math.max(0,power-(drain+(joelSealed[0]?0.24:0)+(joelSealed[1]?0.24:0))*dt*(hardcoreMode?1.65:1));if(power<=0&&!blackout){beginBlackout();render();requestAnimationFrame(tick);return;}if(enabled(3)){if(buckleyActive){buckleyCountdown-=dt;if(buckleyCountdown<=0){lose('buckley');return}}else{buckleyNext-=dt;if(buckleyNext<=0)spawnBuckley()}}
+elapsed+=dt;hour=Math.min(6,Math.floor(elapsed/(duration/6)));if(elapsed>=duration){if(mode69==='endless'){mode69EndlessNext()}else{win();return}}let drain=.31+(left?.40:0)+(right?.40:0)+(cams?.25:0)+(flashOffice?.40:0)+(flashCam&&cams?.38:0);power=Math.max(0,power-(drain+(joelSealed[0]?0.24:0)+(joelSealed[1]?0.24:0))*dt*(hardcoreMode?1.65:1)*(online82?1+0.10*Math.max(0,Math.min(4,Object.values(players84).filter(p=>p&&p.session).length)-1):1));if(power<=0&&!blackout){beginBlackout();render();requestAnimationFrame(tick);return;}if(enabled(3)){if(buckleyActive){buckleyCountdown-=dt;if(buckleyCountdown<=0){lose('buckley');return}}else{buckleyNext-=dt;if(buckleyNext<=0)spawnBuckley()}}
 if(alexActive){if(maskOn){alexMaskTime+=dt;if(alexMaskTime>=2){alexActive=false;alexNext=18+Math.random()*16;alexDanger=0;alexMaskTime=0;beep(330,.14,'triangle');setTimeout(()=>beep(180,.22,'triangle'),160)}}else{alexMaskTime=0;alexDanger+=dt;if(alexDanger>=5){lose('alex');return}}}else if(enabled(4)&&!goldenActive){alexNext-=dt;if(alexNext<=0){alexActive=true;alexDanger=0;alexMaskTime=0;if(cams){cams=false;ventMode=false;refilling=false;beep(120,.34,'sawtooth');setTimeout(()=>beep(70,.3,'square'),110)}beep(930,.22,'sawtooth');setTimeout(()=>beep(600,.24,'sawtooth'),230)}}
 if(!blackout){
 slurpy=Math.max(0,Math.min(100,slurpy-dt*(enabled(2)?(.34+(night-1)*.19)*danger(2):0)+(refilling&&cams&&!ventMode&&utilityMode==='cams'&&cameraOffline!==1&&cam===1?dt*13:0)));
@@ -2437,17 +2437,24 @@ function reset84(){rear84=false;eric84={active:false,timer:0,next:new84AI('eric'
 function render84(){const turn=$('turn84'),rear=$('rear84');if(!turn||!rear)return;turn.classList.toggle('hidden',!running||cams);turn.textContent=rear84?'↻ FACE OFFICE':'↻ TURN AROUND';rear.classList.toggle('active',running&&!cams&&rear84);const e=$('eric84img'),l=$('lebron84img');e.classList.toggle('hidden',!eric84.active);e.style.animationDelay=eric84.active?(-Math.min(6,Math.max(0,eric84.timer)))+'s':'0s';l.classList.toggle('hidden',!lebron84.active);$('rear84prompt').classList.toggle('hidden',!lebron84.active);$('rear84prompt').textContent='GIVE ME THE MASK · '+Math.max(0,Math.ceil(10-lebron84.timer));$('maskbtn').classList.toggle('hidden',maskMissing84||maskOn);$('takeoffbtn').classList.toggle('hidden',!maskOn);if(maskMissing84&&maskOn){maskOn=false;$('maskOverlay').classList.add('hidden')};const pick=$('maskPickup84');if(pick)pick.classList.toggle('hidden',!maskMissing84||!cams||ventMode||utilityMode!=='cams'||cam!==maskCamera84)}
 function lose84(by){if(online82&&!online82Host)return;lose(by)}
 function tick84(dt){if(!running||blackout)return;
- if(!eric84.active){eric84.next-=dt;if(eric84.next<=0&&!maskMissing84&&!lebron84.active){eric84.active=true;eric84.timer=0;eric84Safe={};last84Foot=0;beep(90,.25,'sawtooth')}}else{eric84.timer+=dt;if(eric84.timer-last84Foot>.75){last84Foot=eric84.timer;beep(72,.13,'triangle')}
+ if(!eric84.active){eric84.next-=dt;if(eric84.next<=0&&!maskMissing84&&!lebron84.active){eric84.active=true;eric84.timer=0;eric84Safe={};last84Foot=0;beep(90,.25,'sawtooth')}}else{eric84.timer+=dt;if(eric84.timer-last84Foot>.75){last84Foot=eric84.timer;beep(72,.34,'sawtooth')}
  if(eric84.timer>=6){if(online82){for(const [id,p] of Object.entries(players84)){if(p.session&&(!p.mask||p.rear!==true)){lose84('eric');return}}if(!players84[myId84]&&(!maskOn||!rear84)){lose84('eric');return}}else if(!maskOn||!rear84){lose84('eric');return}eric84.active=false;eric84.next=new84AI('eric')===0?Infinity:(37-new84AI('eric')*.7)+Math.random()*20}}
- if(!lebron84.active){lebron84.next-=dt;if(lebron84.next<=0&&!eric84.active&&!maskMissing84){lebron84.active=true;lebron84.timer=0;beep(160,.35,'sawtooth')}}else{lebron84.timer+=dt;if(lebron84.timer>=10){lose84('lebron');return}}}
+ if(!lebron84.active){lebron84.next-=dt;if(lebron84.next<=0&&!eric84.active&&!maskMissing84){lebron84.active=true;lebron84.timer=0;beep(160,.7,'sawtooth');setTimeout(()=>beep(125,.55,'sawtooth'),180)}}else{lebron84.timer+=dt;if(lebron84.timer>=10){lose84('lebron');return}}}
 function giveMask84(){if(!lebron84.active||!running)return; if(online82&&!online82Host){window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'lebron84'}}));return}lebron84.active=false;lebron84.next=new84AI('lebron')===0?Infinity:(47-new84AI('lebron')*.7)+Math.random()*25;maskMissing84=true;maskOn=false;maskCamera84=Math.floor(Math.random()*5);beep(240,.4,'triangle');render()}
 function pickup84(){if(!maskMissing84||!running)return;if(online82&&!online82Host){window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'pickup84'}}));return}maskMissing84=false;lebron84.next=Math.max(lebron84.next,25);beep(610,.2,'sine');render()}
 function flashEric84(){if(!running||!eric84.active||!rear84||cams)return;if(online82&&!online82Host){window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'ericFlash84'}}));return}lose84('eric')}
 $('turn84').onclick=()=>{if(!running||cams)return;rear84=!rear84;window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'rear84',on:rear84}}));render()};
 $('lebron84img').onclick=giveMask84;
 const pickupNode84=document.createElement('button');pickupNode84.id='maskPickup84';pickupNode84.className='hidden';pickupNode84.textContent='🎭 RECOVER MASK';pickupNode84.onclick=pickup84;$('feed').appendChild(pickupNode84);
-window.fnaa84PlayerData=()=>({mask:!!maskOn&&!maskMissing84,rear:!!rear84});
-window.fnaa84PlayerList=(v,id)=>{players84=v||{};myId84=id||''};
+window.fnaa84PlayerData=()=>({mask:!!maskOn&&!maskMissing84,rear:!!rear84,fx:Math.round(Math.max(0,Math.min(100,(flashPointerX-$('game').getBoundingClientRect().left)/Math.max(1,$('game').getBoundingClientRect().width)*100))),fy:Math.round(Math.max(0,Math.min(100,(flashPointerY-$('game').getBoundingClientRect().top)/Math.max(1,$('game').getBoundingClientRect().height)*100)))});
+window.fnaa84PlayerList=(v,id)=>{players84=v||{};myId84=id||'';const game=$('game');if(!game)return;
+ let layer=$('teammateBeams84');if(!layer){layer=document.createElement('div');layer.id='teammateBeams84';layer.style.cssText='position:absolute;inset:0;z-index:19;pointer-events:none;overflow:hidden';game.appendChild(layer)}
+ layer.replaceChildren();
+ for(const [pid,pl] of Object.entries(players84)){if(pid===myId84||!pl||!pl.flash||!pl.session||!Number.isFinite(pl.fx)||!Number.isFinite(pl.fy))continue;
+ const beam=document.createElement('div');beam.style.cssText='position:absolute;width:110px;height:110px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fff7ba99 0%,#ffe99455 26%,#fff2a511 70%,transparent 100%);mix-blend-mode:screen';beam.style.left=pl.fx+'%';beam.style.top=pl.fy+'%';
+ const tag=document.createElement('span');tag.textContent='🔦 '+(pl.name||'Teammate');tag.style.cssText='position:absolute;left:0;top:-17px;color:#fff5b0;font:bold 11px sans-serif;white-space:nowrap;text-shadow:0 1px 4px black';beam.appendChild(tag);layer.appendChild(beam);
+ }
+};
 window.fnaa84Snapshot=()=>({eric84,lebron84,maskMissing84,maskCamera84});
 window.fnaa84Apply=v=>{if(!v)return;eric84=v.eric84||eric84;lebron84=v.lebron84||lebron84;maskMissing84=!!v.maskMissing84;maskCamera84=v.maskCamera84||0;render84()};
 window.fnaa84RemoteAction=a=>{if(a.type==='lebron84')giveMask84();if(a.type==='pickup84')pickup84();if(a.type==='ericFlash84')lose84('eric')};
@@ -2457,11 +2464,11 @@ let online82=false, online82Host=false, online82Applying=false;
 let online82RemoteFlash=null;
 window.fnaa82Role=(active,host)=>{online82=!!active;online82Host=!!host;online82RemoteFlash=null};
 window.fnaa82Running=()=>running;
-window.fnaa82Snapshot=()=>({elapsed,hour,power,slurpy,pos,side,kidPos,blackout,puppetAttack,puppetClock,alexActive,alexDanger,goldenActive,ziggyActive,ziggyVent,ziggyCountdown,eleanorVisible,eleanorTimer,mynorActive,mynorTime,joelActive,joelSide,joelClock,ratFlipperActive,ratFlipperSide,ratFlipperTime,buckleyActive,buckleyCountdown,goonCharge,goonAI,goonRest,bossActive,bossRoute,bossVentIndex,cameraOffline,mar:marMinions.map(m=>({x:m.x,y:m.y,lit:m.lit,needed:m.needed})),update84:window.fnaa84Snapshot(),at:Date.now()});
+window.fnaa82Snapshot=()=>({elapsed,hour,power,slurpy,babyNoise,babyNoiseDanger,pos,side,kidPos,blackout,puppetAttack,puppetClock,alexActive,alexDanger,goldenActive,ziggyActive,ziggyVent,ziggyCountdown,eleanorVisible,eleanorTimer,mynorActive,mynorTime,joelActive,joelSide,joelClock,ratFlipperActive,ratFlipperSide,ratFlipperTime,buckleyActive,buckleyCountdown,goonCharge,goonAI,goonRest,bossActive,bossRoute,bossVentIndex,cameraOffline,mar:marMinions.map(m=>({x:m.x,y:m.y,lit:m.lit,needed:m.needed})),update84:window.fnaa84Snapshot(),at:Date.now()});
 window.fnaa82ApplySnapshot=v=>{
  if(!online82||online82Host||!running||!v)return;
  online82Applying=true;
- for(const k of ['elapsed','hour','power','slurpy','pos','side','kidPos','blackout','puppetAttack','puppetClock','alexActive','alexDanger','goldenActive','ziggyActive','ziggyVent','ziggyCountdown','eleanorVisible','eleanorTimer','mynorActive','mynorTime','joelActive','joelSide','joelClock','ratFlipperActive','ratFlipperSide','ratFlipperTime','buckleyActive','buckleyCountdown','goonCharge','goonAI','goonRest','bossActive','bossRoute','bossVentIndex','cameraOffline']){
+ for(const k of ['elapsed','hour','power','slurpy','babyNoise','babyNoiseDanger','pos','side','kidPos','blackout','puppetAttack','puppetClock','alexActive','alexDanger','goldenActive','ziggyActive','ziggyVent','ziggyCountdown','eleanorVisible','eleanorTimer','mynorActive','mynorTime','joelActive','joelSide','joelClock','ratFlipperActive','ratFlipperSide','ratFlipperTime','buckleyActive','buckleyCountdown','goonCharge','goonAI','goonRest','bossActive','bossRoute','bossVentIndex','cameraOffline']){
   if(Object.prototype.hasOwnProperty.call(v,k))try{eval(k+' = v[k]')}catch(e){}
  }
  if(Array.isArray(v.mar)){
@@ -2475,7 +2482,7 @@ window.fnaa82RemoteAction=a=>{
  window.fnaa84RemoteAction(a);
  if(a.type==='flash'&&a.on){online82RemoteFlash={x:a.x,y:a.y,until:Date.now()+950};}
  if(a.type==='flash'&&!a.on)online82RemoteFlash=null;
- if(a.type==='slurpy'&&a.on)slurpy=Math.min(100,slurpy+3);
+ if(a.type==='slurpy'){if(a.on)slurpy=Math.min(100,slurpy+3);}
  if(a.type==='taser'&&ziggyActive&&a.vent===ziggyVent){ziggyActive=false;ziggyHits++;ziggyNext=23+Math.random()*10}
  if(a.type==='mask'&&a.on&&alexActive){alexActive=false;alexNext=18+Math.random()*16;alexDanger=0}
  if(a.type==='mar'&&Number.isInteger(a.index)&&marMinions[a.index]){marMinions[a.index].node.remove();marMinions.splice(a.index,1);marCleared++}
@@ -2485,6 +2492,8 @@ window.fnaa82Win=()=>{if(running){online82Applying=true;win();online82Applying=f
 window.fnaa82Retry=()=>{if(!online82)return false;window.dispatchEvent(new Event('fnaa82-retry'));return true};
 document.addEventListener('click',e=>{if(e.target.closest('#retry')&&online82){e.preventDefault();e.stopImmediatePropagation();window.fnaa82Retry()}},true);
 window.addEventListener('pointerdown',e=>{if(!online82||!running)return;setTimeout(()=>window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'flash',on:!!(flashOffice||flashCam),x:Math.max(0,Math.min(100,flashPointerX/Math.max(1,innerWidth)*100)),y:Math.max(0,Math.min(100,flashPointerY/Math.max(1,innerHeight)*100)),cam:cams?(utilityMode==='craig'?'craig':ventMode?'vent '+(vent+1):'CAM '+(cam+1)):'OFFICE'}})),80)},true);
+setInterval(()=>{if(online82&&!online82Host&&running&&refilling&&cams&&cam===1&&!ventMode&&utilityMode==='cams')window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'slurpy',on:true}}))},230);
+window.addEventListener('pointermove',e=>{if(!online82||!running||flashlightPointer===null)return;const r=$('game').getBoundingClientRect();window._fnaa82Flash=!!(flashOffice||flashCam);flashPointerX=e.clientX;flashPointerY=e.clientY;},{passive:true});
 window.addEventListener('pointerup',()=>{if(online82)window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:'flash',on:false}}))});
 document.addEventListener('click',e=>{if(!online82||!running)return;const id=e.target.closest('button')?.id;if(['normalTab','craigTab','camToggle','camButton','taserbtn','refill','maskbtn'].includes(id)||id?.startsWith('cam'))setTimeout(()=>window.dispatchEvent(new CustomEvent('fnaa82-activity',{detail:{type:id==='taserbtn'?'taser':id==='refill'?'slurpy':id==='maskbtn'?'mask':'view',on:true,vent,cam:cams?(utilityMode==='craig'?'CRAIG SHOP':ventMode?'VENT '+(vent+1):'CAM '+(cam+1)):'OFFICE'}})),50)},true);
 // Update 81: multiplayer shared physical controls; cameras stay local to each phone.
