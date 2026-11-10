@@ -691,9 +691,16 @@ function showMenuPage(page,fromAndroidBack=false){
   try{history.back()}catch(e){}
  }
 
- $('menuMain').classList.toggle('hidden',page!=='main');$('settingsPage').classList.toggle('hidden',page!=='settings');$('retroSecret').classList.toggle('hidden',!secretUnlocked);if(page==='settings')renderSettings();$('achievementPage').classList.toggle('hidden',page!=='achievements');$('retroNightSix').classList.toggle('hidden',unlocked<6);if(page==='achievements')drawAchievements();if(page==='extras'){renderShadowExtras();renderMynorExtras();renderBossExtras();renderJoelExtras();renderBabyZiggyExtras();renderRatFlipperExtras();renderNew84Extras();installEncyclopedia();drawJumpscareGallery();renderMastery()}
+ $('menuMain').classList.toggle('hidden',page!=='main');$('settingsPage').classList.toggle('hidden',page!=='settings');$('retroSecret').classList.toggle('hidden',!secretUnlocked);if(page==='settings')renderSettings();$('achievementPage').classList.toggle('hidden',page!=='achievements');$('retroNightSix').classList.toggle('hidden',unlocked<6);if(page==='achievements')drawAchievements();
  $('nightPage').classList.toggle('hidden',page!=='nights');
  $('extrasPage').classList.toggle('hidden',page!=='extras');$('minigamesPage').classList.toggle('hidden',page!=='minigames');if(page!=='minigames')stopArcade();$('customPage').classList.toggle('hidden',page!=='custom');$('shopPage').classList.toggle('hidden',page!=='shop');$('inventoryPage').classList.toggle('hidden',page!=='inventory');
+ if(page==='extras'){
+  // Open the page first, and isolate each optional renderer so a failure
+  // in one add-on cannot leave Extras as a blank screen.
+  const tasks=[renderShadowExtras,renderMynorExtras,renderBossExtras,renderJoelExtras,renderBabyZiggyExtras,renderRatFlipperExtras,renderNew84Extras,installEncyclopedia,drawJumpscareGallery,renderMastery];
+  for(const task of tasks){try{task()}catch(err){console.error('Extras renderer failed:',task.name,err)}}
+  try{if(typeof harrisonExtras90==='function')harrisonExtras90()}catch(err){console.error('Harrison Extras failed:',err)}
+}
  $('continueLabel').textContent=activeSave?activeSave.name+' · Night '+activeSave.night:'Night '+unlocked;
 }
 window.addEventListener('popstate',()=>{
