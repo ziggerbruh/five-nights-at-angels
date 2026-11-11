@@ -2846,7 +2846,7 @@ async function saveName(){
  }
  const report=t=>{error.textContent=t;msg(t)};
  if(name.length<3||name.length>20){report('Username must contain 3–20 characters.');return}
- if(/[\\u0000-\\u001f\\u007f<>]/.test(name)){report('That username contains unsupported characters.');return}
+ if(/[\u0000-\u001f\u007f<>]/.test(name)){report('That username contains unsupported characters.');return}
  if(!db||!uid||!auth?.currentUser){report('Firebase is still connecting. Close and reopen Multiplayer, then try again.');return}
  if(button?.disabled)return;
  error.textContent='';
