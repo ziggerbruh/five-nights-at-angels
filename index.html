@@ -2537,10 +2537,19 @@ window.fnaa82Role=(active,host)=>{online82=!!active;online82Host=!!host;online82
 window.fnaa82Running=()=>running;
 window.fnaa82Snapshot=()=>({elapsed,hour,power,slurpy,babyNoise,babyNoiseDanger,pos,side,kidPos,blackout,puppetAttack,puppetClock,alexActive,alexDanger,goldenActive,ziggyActive,ziggyVent,ziggyCountdown,eleanorVisible,eleanorTimer,mynorActive,mynorTime,joelActive,joelSide,joelClock,ratFlipperActive,ratFlipperSide,ratFlipperTime,buckleyActive,buckleyCountdown,goonCharge,goonAI,goonRest,bossActive,bossRoute,bossVentIndex,cameraOffline,mar:marMinions.map(m=>({x:m.x,y:m.y,lit:m.lit,needed:m.needed})),update84:window.fnaa84Snapshot(),at:Date.now()});
 window.fnaa82ApplySnapshot=v=>{
- if(!online82||online82Host||!running||!v)return;
+ if(!online82||online82Host||!v)return;
+ // Shared meters are authoritative even while the guest UI finishes loading.
+ if(Number.isFinite(Number(v.power)))power=Math.max(0,Math.min(100,Number(v.power)));
+ if(Number.isFinite(Number(v.slurpy)))slurpy=Math.max(0,Math.min(100,Number(v.slurpy)));
+ const powerText=document.getElementById('power'),powerFill=document.getElementById('powerfill'),slurpyText=document.getElementById('slurpyHud'),slurpyFill=document.getElementById('slurpyFill');
+ if(powerText)powerText.textContent=Math.ceil(power);
+ if(powerFill)powerFill.style.width=power+'%';
+ if(slurpyText)slurpyText.textContent=Math.ceil(slurpy);
+ if(slurpyFill)slurpyFill.style.width=slurpy+'%';
+ if(!running)return;
  online82Applying=true;
  for(const k of ['elapsed','hour','power','slurpy','babyNoise','babyNoiseDanger','pos','side','kidPos','blackout','puppetAttack','puppetClock','alexActive','alexDanger','goldenActive','ziggyActive','ziggyVent','ziggyCountdown','eleanorVisible','eleanorTimer','mynorActive','mynorTime','joelActive','joelSide','joelClock','ratFlipperActive','ratFlipperSide','ratFlipperTime','buckleyActive','buckleyCountdown','goonCharge','goonAI','goonRest','bossActive','bossRoute','bossVentIndex','cameraOffline']){
-  if(Object.prototype.hasOwnProperty.call(v,k))try{eval(k+' = v[k]')}catch(e){}
+  if(Object.prototype.hasOwnProperty.call(v,k)){if(k==='power'||k==='slurpy')continue;try{eval(k+' = v[k]')}catch(e){}}
  }
  if(Array.isArray(v.mar)){
   const holder=$('marMinions');holder.replaceChildren();marMinions=[];
@@ -2589,7 +2598,7 @@ let harrisonCustom90=Number(localStorage.getItem('fnaa_harrison_ai90')||10);
 initializeSaveSystem();
 drawNights();showMenuPage('main');render();
 // Update 78: expose the actual night starter to the Firebase module.
-window.fnaaStartOnlineNight = function(nextNight=1,settings98=null){ night=Math.max(1,Math.min(6,Number(nextNight)||1));customMode=!!(settings98&&Array.isArray(settings98.levels));secretMode=false;activeSave={mode:'classic'};if(customMode){const ai=settings98.levels;customLevels=ai.slice(0,13).map(n=>Math.max(0,Math.min(20,Number(n)||0)));harrisonCustom90=ai[13]||0;ericCustomAI=ai[14]||0;lebronCustomAI=ai[15]||0;slowbamaCustomAI=ai[16]||0;customChallenge='Free Play';}reset(); };
+window.fnaaStartOnlineNight = function(nextNight=1,settings98=null){ night=Math.max(1,Math.min(6,Number(nextNight)||1));customMode=!!(settings98&&Array.isArray(settings98.levels));secretMode=false;activeSave={mode:'classic'};if(customMode){const ai=settings98.levels;customLevels=ai.slice(0,14).map(n=>Math.max(0,Math.min(20,Number(n)||0)));harrisonCustom90=ai[14]||0;ericCustomAI=ai[15]||0;lebronCustomAI=ai[16]||0;slowbamaCustomAI=ai[17]||0;shadowCustomAI=ai[18]||0;bossCustomAI=ai[19]||0;customChallenge='Free Play';}reset(); };
 
 // UPDATE 90: Harrison - non-lethal vent thief, starts Night 3.
 function harrisonEnabled90(){return secretMode||customMode?harrisonCustom90>0:night>=3;}
@@ -2738,7 +2747,7 @@ function begin82(code,launchId){
   co82.push(onValue(ref(db,base+'/outcome'),snap=>{const v=snap.val();if(!v||v.session!==co82Session)return;const key=v.kind+':'+v.at;if(co82LastLoss===key)return;co82LastLoss=key;if(v.kind==='lose'){coop87Outcome='lose';window.fnaa82Lose?.(v.by);showRetry82(0)}if(v.kind==='win'){coop87Outcome='win';window.fnaa82Win?.();setTimeout(()=>{showRetry82(0);if(co82Host)send82('coop82/retry/session',co82Session)},350)}}));
   co82.push(onValue(ref(db,base+'/retry'),snap=>{const v=snap.val()||{};if(v.session!==co82Session)return;retry84Ready=v.ready||{};if(document.getElementById('fnaa82retry'))showRetry82(v.at||0);const ids=Object.keys(v.ready||{});if(ids.length>=1&&ids.length===Object.values(window._fnaa84LobbyPlayers||{}).filter(Boolean).length&&ids.every(id=>v.ready[id]===true)&&co82Host&&!v.at){runTransaction(ref(db,base+'/retry/at'),old=>old===null?Date.now()+3000:undefined,{applyLocally:false}).catch(console.warn)}if(v.at){showRetry82(v.at);if(co82Host&&Date.now()>=v.at)finishRetry82(code,base,v.at)}}));
   co82.push(onValue(ref(db,base+'/retry/nextNight'),snap=>{if(snap.exists())window._fnaa87PendingNight=Number(snap.val())||coop87Night}));
-  co82.push(onValue(ref(db,base+'/retryLaunch'),snap=>{const at=snap.val();if(!at||at===window._fnaa82LastRetry)return;window._fnaa82LastRetry=at;document.getElementById('fnaa82retry')?.remove();retry84Deadline=0;retry84Ready={};if(retry84Timer){clearInterval(retry84Timer);retry84Timer=null}co82LastLoss='';coop87Night=Math.max(1,Math.min(6,Number(window._fnaa87PendingNight)||coop87Night));coop87Outcome='';spectator88=false;spectator88Draw();window.fnaaStartOnlineNight?.(coop87Night);send82('coop82/retry/ready/'+uid,null);if(co82Host){send82('coop82/outcome',null);send82('coop82/state',null);send82('coop82/retry',null)}}));
+  co82.push(onValue(ref(db,base+'/retryLaunch'),snap=>{const at=snap.val();if(!at||at===window._fnaa82LastRetry)return;window._fnaa82LastRetry=at;document.getElementById('fnaa82retry')?.remove();retry84Deadline=0;retry84Ready={};if(retry84Timer){clearInterval(retry84Timer);retry84Timer=null}co82LastLoss='';coop87Night=Math.max(1,Math.min(6,Number(window._fnaa87PendingNight)||coop87Night));coop87Outcome='';spectator88=false;spectator88Draw();window.fnaaStartOnlineNight?.(coop87Night,v98LaunchSettings[code]||null);send82('coop82/retry/ready/'+uid,null);if(co82Host){send82('coop82/outcome',null);send82('coop82/state',null);send82('coop82/retry',null)}}));
   co82Ticker=setInterval(()=>{
    const rt=document.getElementById('fnaa82retry');if(rt&&retry84Deadline&&co82Host&&Date.now()>=retry84Deadline)finishRetry82(code,base,retry84Deadline)
    if(room!==code||!window.fnaa82Running?.())return;
@@ -2909,13 +2918,13 @@ function observeArrival83(code,players){
  arrivalSeen.add(marker);showArrival83(code,creator);
 }
 let lobby98Mode='classic';
-const lobby98Names=['Angel','Wyatt','Kaleb','Buckley','Alex','Ziggy','Eh Koe','Golden Angel','Mar','Eleanor','Mynor','Joel','Baby Ziggy','Harrison','Eric','LeBron','Slow Bama'];
+const lobby98Names=['Angel','Wyatt','Kaleb','Buckley','Alex','Ziggy','Eh Koe','Golden Angel','Mar','Eleanor','Mynor','Joel','Baby Ziggy','Rat Flipper','Harrison','Eric','LeBron','Slow Bama','Shadow Angel','BBNOLARP'];
 const lobby98Presets={
  'CUSTOM':null,
  'DOOR DEFENDERS':{'Angel':18,'Wyatt':18,'Eh Koe':14,'Harrison':10},
  'VENT NIGHTMARE':{'Ziggy':20,'Joel':20,'Harrison':16},
  'REAR WINDOW PANIC':{'Eric':18,'LeBron':16,'Slow Bama':18},
- 'ALL OUT CHAOS':Object.fromEntries(['Angel','Wyatt','Kaleb','Buckley','Alex','Ziggy','Eh Koe','Golden Angel','Mar','Eleanor','Mynor','Joel','Baby Ziggy','Harrison','Eric','LeBron','Slow Bama'].map(n=>[n,15]))
+ 'ALL OUT CHAOS':Object.fromEntries(['Angel','Wyatt','Kaleb','Buckley','Alex','Ziggy','Eh Koe','Golden Angel','Mar','Eleanor','Mynor','Joel','Baby Ziggy','Rat Flipper','Harrison','Eric','LeBron','Slow Bama','Shadow Angel','BBNOLARP'].map(n=>[n,15]))
 };
 function lobby98Controls(v){
  const box=document.createElement('div');box.id='lobby98settings';box.style.cssText='margin:12px auto;padding:12px;border:1px solid #8ab6e8;border-radius:10px;max-width:540px;background:#172338';
