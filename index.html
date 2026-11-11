@@ -2805,7 +2805,7 @@ function close(){endArrival83();panel.hidden=true}
 $75('online75Open').addEventListener('click',open);$75('on76LeaderboardMenu').addEventListener('click',()=>{panel.hidden=false;if(!uid){view('<p>Connecting to Firebase…</p>','LEADERBOARDS');connect().then(()=>showLeaderboard()).catch(()=>{});}else showLeaderboard()});
 $75('updates75Open').addEventListener('click',()=>{panel.hidden=false;view('<div class="on75card"><h3>UPDATE 84 — FOUR-PLAYER CO-OP</h3><p>✓ Firebase anonymous player IDs</p><p>✓ One-time permanent usernames</p><p>✓ Create or join private 2–4 player lobbies</p><p>✓ Live lobby player list</p><p>✓ Host Start Game button</p><p>✓ Shared lobby launch signal</p><p>✓ Leaderboard preview</p><p class="on75muted">All connected phones launch their own night when the host starts. Gameplay actions are not yet synchronized. Leaderboard publishing requires updated Firebase rules.</p></div>','UPDATE LOG')});
 $75('on75close').addEventListener('click',close);
-async function connect(){if(connecting)return;connecting=true;try{const app=initializeApp(cfg);auth=getAuth(app);db=getDatabase(app);await signInAnonymously(auth);uid=auth.currentUser?.uid;if(!uid)throw Error('Could not sign in');if(uid===GIFT_BABY_ZIGGY_UID)window.fnaaGiftBabyZiggy84?.();gift86Watch();gift86Presence();const snap=await get(ref(db,'profiles/'+uid));profile=snap.exists()?snap.val():null;home()}catch(e){view('<p>Connection failed. Check internet and Firebase configuration.</p><button id="on75retry">RETRY</button>');$75('on75retry').onclick=()=>{connecting=false;connect()};msg(e.message)}finally{connecting=false}}
+async function connect(){if(connecting)return;connecting=true;try{const app=initializeApp(cfg);auth=getAuth(app);db=getDatabase(app);await signInAnonymously(auth);uid=auth.currentUser?.uid;if(!uid)throw Error('Could not sign in');if(uid===GIFT_BABY_ZIGGY_UID)window.fnaaGiftBabyZiggy84?.();try{gift86Watch();gift86Presence()}catch(giftError){console.warn('Optional gift setup:',giftError)}const snap=await get(ref(db,'profiles/'+uid));profile=snap.exists()?snap.val():null;home()}catch(e){view('<p>Connection failed. Check internet and Firebase configuration.</p><button id="on75retry">RETRY</button>');$75('on75retry').onclick=()=>{connecting=false;connect()};msg(e.message)}finally{connecting=false}}
 function gift86EnsureButton(){
  let b=document.getElementById('gift86main');if(b)return;
  b=document.createElement('button');b.id='gift86main';b.textContent='🎁 GIFT · CREATOR ONLY';b.style.cssText='display:block;margin:8px auto;background:#5c3b09;color:#ffde81;border:2px solid #ffd15c;border-radius:10px;padding:12px;font-weight:bold';
@@ -2817,36 +2817,38 @@ view('<div class="on75card"><h3>WELCOME, '+escapeHTML(profile.name)+'</h3><p cla
 async function saveName(){
  const field=$75('on75name'),button=$75('on75save');
  const name=(field?.value||'').trim();
- if(name.length<3||name.length>20||/[\\u0000-\\u001f\\u007f<>]/.test(name)){
-  msg('Choose a name with 3–20 characters.');return;
- }
- if(!db||!uid){msg('Still connecting. Please try again in a moment.');return;}
- if(!confirm('Lock in "'+name+'" forever? You cannot rename this account.'))return;
- if(button){button.disabled=true;button.textContent='SAVING USERNAME…';}
- try{
-  const p=ref(db,'profiles/'+uid);
-  // The Firebase rules allow only the first creation. Avoid transactions
-  // here: a failed transaction can leave the registration UI stuck.
-  const existing=await get(p);
-  if(existing.exists()){
-   profile=existing.val();home();return;
-  }
-  await set(p,{name,createdAt:Date.now()});
-  const saved=await get(p);
-  if(!saved.exists())throw Error('Profile was not saved. Please retry.');
-  profile=saved.val();home();
- }catch(e){
-  console.error('Username registration failed:',e);
-  let detail=e?.code||e?.message||'Unknown error';
-  if(String(detail).includes('permission_denied')||String(detail).includes('PERMISSION_DENIED'))
-   detail='Firebase rejected the profile. Check that the published database rules allow profiles/$uid creation.';
-  msg('Could not lock in username: '+detail);
-  const error=document.getElementById('on75nameError')||document.createElement('p');
-  error.id='on75nameError';error.style.cssText='color:#ffb7b7;overflow-wrap:anywhere;font-weight:bold';
-  error.textContent='Could not lock in username: '+detail;
+ let error=$75('on75nameError');
+ if(!error){
+  error=document.createElement('p');error.id='on75nameError';
+  error.style.cssText='color:#ffb7b7;font-weight:bold;overflow-wrap:anywhere;white-space:pre-wrap';
   button?.insertAdjacentElement('afterend',error);
+ }
+ const report=t=>{error.textContent=t;msg(t)};
+ if(name.length<3||name.length>20){report('Username must contain 3–20 characters.');return}
+ if(/[\\u0000-\\u001f\\u007f<>]/.test(name)){report('That username contains unsupported characters.');return}
+ if(!db||!uid||!auth?.currentUser){report('Firebase is still connecting. Close and reopen Multiplayer, then try again.');return}
+ if(button?.disabled)return;
+ error.textContent='';
+ button.disabled=true;button.textContent='SAVING…';
+ const timeout=(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Firebase did not respond. Check your connection and database rules.')),ms))]);
+ try{
+  const target=ref(db,'profiles/'+uid);
+  // Profile creation is permitted only once by the existing Firebase rules.
+  // Check for an existing profile first; never overwrite it.
+  const before=await timeout(get(target),12000);
+  if(before.exists()){profile=before.val();home();return}
+  await timeout(set(target,{name:name,createdAt:Date.now()}),12000);
+  const after=await timeout(get(target),12000);
+  if(!after.exists())throw new Error('Firebase did not confirm the saved username.');
+  profile=after.val();home();
+ }catch(e){
+  console.error('Username save failed',e);
+  const detail=String(e?.code||e?.message||e);
+  report(/permission.denied/i.test(detail)
+    ?'Firebase permission denied. The database rules must allow first-time writes to profiles/$uid. Ask the game creator to check the rules.'
+    :'Could not save username: '+detail);
  }finally{
-  if(button){button.disabled=false;button.textContent='LOCK IN USERNAME';}
+  if(button?.isConnected){button.disabled=false;button.textContent='LOCK IN USERNAME'}
  }
 }
 // Update 83 — a one-time heavenly lobby entrance per room and creator join.
